@@ -11,10 +11,11 @@
 #include <ProjectFS.h>
 #include <StreamUtils.h>
 
-#include <index.html.h>
-#include <style.css.h>
-#include <script.js.h>
 #include <BackupManager.h>
+
+#include <index.html.gz.h>
+#include <bundle.css.gz.h>
+#include <bundle.js.gz.h>
 
 #ifdef ESP32
   #include <SPIFFS.h>
@@ -26,15 +27,15 @@ using namespace std::placeholders;
 void MiLightHttpServer::begin() {
   server
     .buildHandler("/")
-    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(index_html, index_html_len, "text/html"); });
+    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(index_html_gz, index_html_gz_len, "text/html"); });
 
   server
-    .buildHandler(style_css_filename)
-    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(style_css, style_css_len, "text/css"); });
+    .buildHandler(bundle_css_filename)
+    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(bundle_css_gz, bundle_css_gz_len, "text/css"); });
 
   server
-    .buildHandler(script_js_filename)
-    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(script_js, script_js_len, "application/javascript"); });
+    .buildHandler(bundle_js_filename)
+    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(bundle_js_gz, bundle_js_gz_len, "application/javascript"); });
 
   server
     .buildHandler("/settings")

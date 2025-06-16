@@ -420,7 +420,7 @@ var updatingAlias = false;
 
 // don't attempt websocket if we are debugging locally
 if (location.hostname != "") {
-  var webSocket = new WebSocket("ws://" + location.hostname + ":81");
+  var webSocket = new WebSocket("ws://" + location.hostname + ":8000");
   webSocket.onmessage = function(e) {
     if (sniffing) {
       var message = e.data;

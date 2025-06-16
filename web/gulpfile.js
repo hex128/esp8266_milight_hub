@@ -7,8 +7,6 @@ const gzip = require('gulp-gzip');
 const del = require('del');
 const inline = require('gulp-inline');
 const inlineImages = require('gulp-css-base64');
-const favicon = require('gulp-base64-favicon');
-
 const dataFolder = 'build/';
 
 function clean() {
@@ -26,10 +24,11 @@ function buildfs_embeded() {
 
     var data = fs.readFileSync(source);
 
+    wstream.write('#pragma once\n');
     wstream.write('#define index_html_gz_len ' + data.length + '\n');
-    wstream.write('static const char index_html_gz[] PROGMEM = {')
+    wstream.write('static constexpr char index_html_gz[] PROGMEM = {')
 
-    for (i=0; i<data.length; i++) {
+    for (let i=0; i<data.length; i++) {
         wstream.write(data[i].toString());
         if (i<data.length-1) wstream.write(',');
     }
@@ -42,7 +41,6 @@ function buildfs_embeded() {
 
 function buildfs_inline() {
     return src('src/*.html')
-        // .pipe(favicon())
         .pipe(inline({
             base: 'src/',
             js: uglify,

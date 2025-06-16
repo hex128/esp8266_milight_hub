@@ -44,7 +44,7 @@ public:
   )
     : authProvider(settings)
     , server(80, authProvider)
-    , wsServer(WebSocketsServer(81))
+    , wsServer(WebSocketsServer(8000))
     , numWsClients(0)
     , milightClient(milightClient)
     , settings(settings)

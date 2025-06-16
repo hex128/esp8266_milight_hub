@@ -51,11 +51,13 @@ function generateGzippedHeader(inputFile, variableName) {
   fs.writeFileSync(outputFile, gzipped);
   fs.writeFileSync(
     `${outputFile}.h`,
-    `#define ${variableName}_gz_len ${gzippedLength}\n` +
-      `static const char ${variableName}_filename[] = "/${serverFilename}";\n` +
-      `static const char ${variableName}_gz[] PROGMEM = {` +
-      gzipped.map((byte) => byte.toString()).join(",") +
-      "};\n"
+    [
+      '#pragma once',
+      `#define ${variableName}_gz_len ${gzippedLength}`,
+      `static constexpr char ${variableName}_filename[] = "/${serverFilename}";`,
+      `static constexpr char ${variableName}_gz[] PROGMEM = {${gzipped.map(byte => byte.toString()).join(",")}};`,
+      ''
+    ].join('\n')
   );
 
   // for development
@@ -113,4 +115,3 @@ if (process.env.NODE_ENV === "production") {
     }
   }
 }
-

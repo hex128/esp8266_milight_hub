@@ -4,8 +4,8 @@ const path = require('path');
 
 const app = express();
 const PORT = 3000; // You can change this to any port you prefer
-const PROXY_URL = process.env.PROXY_URL || 'http://10.133.8.88'; // Replace with your proxy URL
-const WS_PROXY_URL = process.env.WS_PROXY_URL || `ws://10.133.8.88:81`; // WebSocket proxy URL, defaults to PROXY_URL if not set
+const PROXY_URL = process.env.PROXY_URL || 'http://milight-hub.local';
+const WS_PROXY_URL = process.env.WS_PROXY_URL || `ws://milight-hub.local:8000`;
 
 // HTTP proxy middleware
 const httpProxyMiddleware = createProxyMiddleware({

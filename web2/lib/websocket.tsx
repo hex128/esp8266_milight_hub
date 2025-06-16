@@ -22,7 +22,7 @@ export const WebSocketProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { lastJsonMessage, sendJsonMessage } = useWebSocket(
-    `ws://${window.location.hostname}:81`,
+    `ws://${window.location.hostname}:8000`,
     {
       share: true,
       shouldReconnect: () => false,

@@ -138,7 +138,7 @@ void onPacketSentHandler(const uint8_t* packet, const MiLightRemoteConfig& confi
   // update state to reflect changes from this packet
   GroupState* groupState = stateStore->get(bulbId);
 
-  // pass in previous scratch state as well
+  // pass in the previous scratch state as well
   const GroupState stateUpdates(groupState, result);
 
   if (groupState != nullptr) {
@@ -164,8 +164,7 @@ void onPacketSentHandler(const uint8_t* packet, const MiLightRemoteConfig& confi
 }
 
 /**
- * Listen for packets on one radio config.  Cycles through all configs as its
- * called.
+ * Listen for packets on one radio config. Cycles through all configs as it's called.
  */
 void handleListen() {
   // Do not handle listens while there are packets enqueued to be sent
@@ -226,9 +225,8 @@ void onUpdateEnd() {
  * Apply what's in the Settings object.
  */
 void applySettings() {
-  if (milightClient) {
-    delete milightClient;
-  }
+  delete milightClient;
+
   if (mqttClient) {
     delete mqttClient;
     delete bulbStateUpdater;
@@ -236,15 +234,10 @@ void applySettings() {
     mqttClient = nullptr;
     bulbStateUpdater = nullptr;
   }
-  if (stateStore) {
-    delete stateStore;
-  }
-  if (packetSender) {
-    delete packetSender;
-  }
-  if (radios) {
-    delete radios;
-  }
+
+  delete stateStore;
+  delete packetSender;
+  delete radios;
 
   transitions.setDefaultPeriod(settings.defaultTransitionPeriod);
 
@@ -345,8 +338,8 @@ void wifiExtraSettingsChange() {
   settings.save();
 
   // Restart the device
-  delay(1000);
-  ESP.restart();
+  delay(100);
+  EspClass::restart();
 }
 
 void aboutHandler(JsonDocument& json) {
@@ -360,7 +353,7 @@ void aboutHandler(JsonDocument& json) {
 }
 
 // Called when a group is deleted via the REST API.  Will publish an empty message to
-// the MQTT topic to delete retained state
+// the MQTT topic to delete the retained state
 void onGroupDeleted(const BulbId& id) {
   if (mqttClient != nullptr) {
     mqttClient->sendState(
@@ -435,11 +428,10 @@ void setup() {
   ESPMH_SETUP_WIFI(settings);
   applySettings();
 
-  // set up the LED status for wifi configuration
+  // set up the LED status for Wi-Fi configuration
   ledStatus = new LEDStatus(settings.ledPin);
   ledStatus->continuous(settings.ledModeWifiConfig);
 
-  // start up the wifi manager
   if (!MDNS.begin(MDNS_HOSTNAME)) {
     Serial.println(F("Error setting up MDNS responder"));
   }
@@ -453,12 +445,12 @@ void setup() {
   wifiManager->setSaveConfigCallback(wifiExtraSettingsChange);
 
   wifiManager->setConfigPortalBlocking(false);
-  wifiManager->setConnectTimeout(20);
-  wifiManager->setConnectRetries(5);
+  // wifiManager->setConnectTimeout(20);
+  // wifiManager->setConnectRetries(5);
 
   wifiStaticIP = new WiFiManagerParameter(
     "staticIP",
-    "Static IP (Leave blank for dhcp)",
+    "Static IP address (leave blank to use DHCP)",
     settings.wifiStaticIP.c_str(),
     MAX_IP_ADDR_LEN
   );
@@ -500,15 +492,12 @@ void setup() {
     wifiManager->setSTAStaticIPConfig(_ip,_gw,_subnet);
   }
 
-  wifiManager->setConfigPortalTimeout(180);
-  wifiManager->setConfigPortalTimeoutCallback([]() {
-      ledStatus->continuous(settings.ledModeWifiFailed);
-
-      Serial.println(F("Wifi config portal timed out.  Restarting..."));
-      delay(10000);
-      // TODO: do not restart
-      ESP.restart();
-  });
+  // wifiManager->setConfigPortalTimeout(180);
+  // wifiManager->setConfigPortalTimeoutCallback([]() {
+  //     ledStatus->continuous(settings.ledModeWifiFailed);
+  //
+  //     Serial.println(F("Wi-Fi config portal timed out.  Restarting..."));
+  // });
 
   if (wifiManager->autoConnect(ssid, AP_PASSWORD)) {
     // set LED mode for successful operation
@@ -519,6 +508,8 @@ void setup() {
     WiFi.mode(WIFI_STA);
 
     postConnectSetup();
+  } else {
+    wifiManager->startConfigPortal(ssid, AP_PASSWORD);
   }
 }
 
@@ -530,7 +521,7 @@ void loop() {
 
   if (shouldRestart()) {
     Serial.println(F("Auto-restart triggered. Restarting..."));
-    ESP.restart();
+    EspClass::restart();
   }
 
   if (wifiManager) {
@@ -539,6 +530,8 @@ void loop() {
 
   if (WiFi.getMode() == WIFI_STA && WiFi.isConnected()) {
     postConnectSetup();
+
+    MDNS.update();
 
     httpServer->handleClient();
     if (mqttClient) {
