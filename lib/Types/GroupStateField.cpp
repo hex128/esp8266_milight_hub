@@ -1,5 +1,6 @@
 #include <GroupStateField.h>
 #include <Size.h>
+#include <cstring>
 
 static const char* STATE_NAMES[] = {
   GroupStateFieldNames::UNKNOWN,
@@ -33,7 +34,7 @@ GroupStateField GroupStateFieldHelpers::getFieldByName(const char* name) {
   return GroupStateField::UNKNOWN;
 }
 
-const char* GroupStateFieldHelpers::getFieldName(GroupStateField field) {
+const char* GroupStateFieldHelpers::getFieldName(const GroupStateField field) {
   for (size_t i = 0; i < size(STATE_NAMES); i++) {
     if (field == static_cast<GroupStateField>(i)) {
       return STATE_NAMES[i];
@@ -42,7 +43,7 @@ const char* GroupStateFieldHelpers::getFieldName(GroupStateField field) {
   return STATE_NAMES[0];
 }
 
-bool GroupStateFieldHelpers::isBrightnessField(GroupStateField field) {
+bool GroupStateFieldHelpers::isBrightnessField(const GroupStateField field) {
   switch (field) {
     case GroupStateField::BRIGHTNESS:
     case GroupStateField::LEVEL:

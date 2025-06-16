@@ -1,10 +1,9 @@
 #include <V2PacketFormatter.h>
 #include <V2RFEncoding.h>
 
-
 #define GROUP_COMMAND_ARG(status, groupId, numGroups) ( groupId + (status == OFF ? (numGroups + 1) : 0) )
 
-V2PacketFormatter::V2PacketFormatter(const MiLightRemoteType deviceType, uint8_t protocolId, uint8_t numGroups)
+V2PacketFormatter::V2PacketFormatter(const MiLightRemoteType deviceType, const uint8_t protocolId, const uint8_t numGroups)
   : PacketFormatter(deviceType, 9),
     protocolId(protocolId),
     numGroups(numGroups)
@@ -38,7 +37,7 @@ void V2PacketFormatter::initializePacket(uint8_t* packet) {
   packet[packetPtr++] = 0;
 }
 
-void V2PacketFormatter::command(uint8_t command, uint8_t arg) {
+void V2PacketFormatter::command(uint8_t command, const uint8_t arg) {
   pushPacket();
   if (held) {
     command |= 0x80;
@@ -47,7 +46,7 @@ void V2PacketFormatter::command(uint8_t command, uint8_t arg) {
   currentPacket[V2_ARGUMENT_INDEX] = arg;
 }
 
-void V2PacketFormatter::updateStatus(MiLightStatus status, uint8_t groupId) {
+void V2PacketFormatter::updateStatus(const MiLightStatus status, const uint8_t groupId) {
   command(0x01, GROUP_COMMAND_ARG(status, groupId, numGroups));
 }
 
@@ -83,24 +82,24 @@ void V2PacketFormatter::format(uint8_t const* packet, char* buffer) {
   buffer += sprintf_P(buffer, PSTR("Checksum : %02X"), decodedPacket[8]);
 }
 
-uint8_t V2PacketFormatter::groupCommandArg(MiLightStatus status, uint8_t groupId) {
+uint8_t V2PacketFormatter::groupCommandArg(const MiLightStatus status, const uint8_t groupId) {
   return GROUP_COMMAND_ARG(status, groupId, numGroups);
 }
 
 // helper method to return a bulb to the prior state
-void V2PacketFormatter::switchMode(const GroupState& currentState, BulbMode desiredMode) {
+void V2PacketFormatter::switchMode(const GroupState& currentState, const BulbMode desiredMode) {
   // revert back to the prior mode
   switch (desiredMode) {
-    case BulbMode::BULB_MODE_COLOR:
+    case BULB_MODE_COLOR:
       updateHue(currentState.getHue());
       break;
-    case BulbMode::BULB_MODE_NIGHT:
+    case BULB_MODE_NIGHT:
       enableNightMode();
       break;
-    case BulbMode::BULB_MODE_SCENE:
+    case BULB_MODE_SCENE:
       updateMode(currentState.getMode());
       break;
-    case BulbMode::BULB_MODE_WHITE:
+    case BULB_MODE_WHITE:
       updateColorWhite();
       break;
     default:
@@ -110,7 +109,7 @@ void V2PacketFormatter::switchMode(const GroupState& currentState, BulbMode desi
 
 }
 
-uint8_t V2PacketFormatter::tov2scale(uint8_t value, uint8_t endValue, uint8_t interval, bool reverse) {
+uint8_t V2PacketFormatter::tov2scale(uint8_t value, const uint8_t endValue, const uint8_t interval, const bool reverse) {
   if (reverse) {
     value = 100 - value;
   }
@@ -118,7 +117,7 @@ uint8_t V2PacketFormatter::tov2scale(uint8_t value, uint8_t endValue, uint8_t in
   return (value * interval) + endValue;
 }
 
-uint8_t V2PacketFormatter::fromv2scale(uint8_t value, uint8_t endValue, uint8_t interval, bool reverse, uint8_t buffer) {
+uint8_t V2PacketFormatter::fromv2scale(uint8_t value, const uint8_t endValue, const uint8_t interval, const bool reverse, const uint8_t buffer) {
   value -= endValue;
 
   // Deal with underflow

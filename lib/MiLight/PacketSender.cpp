@@ -23,7 +23,7 @@ void PacketSender::enqueue(uint8_t* packet, const MiLightRemoteConfig* remoteCon
 #ifdef DEBUG_PRINTF
   Serial.println("Enqueuing packet");
 #endif
-  size_t repeats = repeatsOverride == DEFAULT_PACKET_SENDS_VALUE
+  const size_t repeats = repeatsOverride == DEFAULT_PACKET_SENDS_VALUE
     ? this->currentResendCount
     : repeatsOverride;
 
@@ -66,7 +66,7 @@ void PacketSender::handleCurrentPacket() {
   // Always switch radio.  could've been listening in another context
   radioSwitchboard.switchRadio(currentPacket->remoteConfig);
 
-  size_t numToSend = std::min(packetRepeatsRemaining, settings.packetRepeatsPerLoop);
+  const size_t numToSend = std::min(packetRepeatsRemaining, settings.packetRepeatsPerLoop);
   sendRepeats(numToSend);
   packetRepeatsRemaining -= numToSend;
 
@@ -108,10 +108,10 @@ void PacketSender::sendRepeats(size_t num) {
 }
 
 void PacketSender::updateResendCount() {
-  unsigned long now = millis();
-  long millisSinceLastSend = now - lastSend;
-  long x = (millisSinceLastSend - settings.packetRepeatThrottleThreshold);
-  long delta = x * throttleMultiplier;
+  const unsigned long now = millis();
+  const long millisSinceLastSend = now - lastSend;
+  const long x = (millisSinceLastSend - settings.packetRepeatThrottleThreshold);
+  const long delta = x * throttleMultiplier;
   int signedResends = static_cast<int>(this->currentResendCount) + delta;
 
   if (signedResends < static_cast<int>(settings.packetRepeatMinimum)) {

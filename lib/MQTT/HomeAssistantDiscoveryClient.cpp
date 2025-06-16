@@ -34,7 +34,7 @@ void HomeAssistantDiscoveryClient::removeOldDevices(const std::map<uint32_t, Bul
 
 void HomeAssistantDiscoveryClient::removeConfig(const BulbId& bulbId) {
   // Remove by publishing an empty message
-  String topic = buildTopic(bulbId);
+  const String topic = buildTopic(bulbId);
   mqttClient->send(topic.c_str(), "", true);
 }
 
@@ -44,7 +44,7 @@ void HomeAssistantDiscoveryClient::addConfig(const char* alias, const BulbId& bu
 
   // Unique ID for this device + alias combo
   char uniqueIdBuffer[30];
-  snprintf_P(uniqueIdBuffer, sizeof(uniqueIdBuffer), PSTR("%X-%s"), getESPId(), alias);
+  snprintf_P(uniqueIdBuffer, sizeof(uniqueIdBuffer), PSTR("MiLight-%X-%s"), getESPId(), alias);
 
   // String to ID the firmware version
   char fwVersion[100];
@@ -63,7 +63,7 @@ void HomeAssistantDiscoveryClient::addConfig(const char* alias, const BulbId& bu
   config[F("stat_t")] = mqttClient->bindTopicString(settings.mqttStateTopicPattern, bulbId);
   config[F("uniq_id")] = uniqueIdBuffer;
 
-  JsonObject deviceMetadata = config.createNestedObject(F("dev"));
+  const JsonObject deviceMetadata = config.createNestedObject(F("dev"));
   deviceMetadata[F("name")] = settings.hostname;
   deviceMetadata[F("sw")] = fwVersion;
   deviceMetadata[F("mf")] = F("espressif");
@@ -112,7 +112,7 @@ void HomeAssistantDiscoveryClient::addConfig(const char* alias, const BulbId& bu
   }
 
   // supported_color_modes
-  JsonArray colorModes = config.createNestedArray(F("sup_clrm"));
+  const JsonArray colorModes = config.createNestedArray(F("sup_clrm"));
 
   // Flag RGB support
   if (MiLightRemoteTypeHelpers::supportsRgb(bulbId.deviceType)) {
@@ -149,7 +149,7 @@ void HomeAssistantDiscoveryClient::addConfig(const char* alias, const BulbId& bu
 //   <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
 //
 // source: https://www.home-assistant.io/docs/mqtt/discovery/
-String HomeAssistantDiscoveryClient::buildTopic(const BulbId& bulbId) {
+String HomeAssistantDiscoveryClient::buildTopic(const BulbId& bulbId) const {
   String topic = settings.homeAssistantDiscoveryPrefix;
 
   // Don't require the user to entier a "/" (or break things if they do)
@@ -175,7 +175,7 @@ String HomeAssistantDiscoveryClient::buildTopic(const BulbId& bulbId) {
 
 String HomeAssistantDiscoveryClient::bindTopicVariables(const String& topic, const char* alias, const BulbId& bulbId) {
   String boundTopic = topic;
-  String hexDeviceId = bulbId.getHexDeviceId();
+  const String hexDeviceId = bulbId.getHexDeviceId();
 
   boundTopic.replace(":device_alias", alias);
   boundTopic.replace(":device_id", hexDeviceId);
@@ -187,7 +187,7 @@ String HomeAssistantDiscoveryClient::bindTopicVariables(const String& topic, con
   return boundTopic;
 }
 
-void HomeAssistantDiscoveryClient::addNumberedEffects(JsonArray& effectList, uint8_t start, uint8_t end) {
+void HomeAssistantDiscoveryClient::addNumberedEffects(const JsonArray& effectList, const uint8_t start, const uint8_t end) {
   for (uint8_t i = start; i <= end; ++i) {
     effectList.add(String(i));
   }

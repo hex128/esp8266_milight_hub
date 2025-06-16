@@ -12,20 +12,17 @@
     - remove sorting
 */
 
-#ifndef LinkedList_h
-#define LinkedList_h
-
-#include <stddef.h>
+#pragma once
 
 template<class T>
 struct ListNode {
   T data;
-  ListNode<T> *next;
-  ListNode<T> *prev;
+  ListNode *next;
+  ListNode *prev;
 };
 
 template <typename T>
-class LinkedList {
+class LinkedList final {
 
 protected:
   size_t _size;
@@ -39,57 +36,57 @@ public:
   /*
     Returns current size of LinkedList
   */
-  virtual size_t size() const;
+  [[nodiscard]] size_t size() const;
   /*
     Adds a T object in the specified index;
-    Unlink and link the LinkedList correcly;
+    Unlink and link the LinkedList correctly;
     Increment _size
   */
-  virtual bool add(size_t index, T);
+  bool add(size_t index, T);
   /*
     Adds a T object in the end of the LinkedList;
     Increment _size;
   */
-  virtual bool add(T);
+  bool add(T);
   /*
     Adds a T object in the start of the LinkedList;
     Increment _size;
   */
-  virtual bool unshift(T);
+  bool unshift(T);
   /*
     Set the object at index, with T;
     Increment _size;
   */
-  virtual bool set(size_t index, T);
+  bool set(size_t index, T);
   /*
     Remove object at index;
     If index is not reachable, returns false;
     else, decrement _size
   */
-  virtual T remove(size_t index);
-  virtual void remove(ListNode<T>* node);
+  T remove(size_t index);
+  void remove(ListNode<T>* node);
   /*
     Remove last object;
   */
-  virtual T pop();
+  T pop();
   /*
     Remove first object;
   */
-  virtual T shift();
+  T shift();
   /*
     Get the index'th element on the list;
     Return Element if accessible,
     else, return false;
   */
-  virtual T get(size_t index);
+  T get(size_t index);
 
   /*
     Clear the entire array
   */
-  virtual void clear();
+  void clear();
 
   ListNode<T>* getNode(size_t index);
-  virtual void spliceToFront(ListNode<T>* node);
+  void spliceToFront(ListNode<T>* node);
   ListNode<T>* getHead() { return root; }
   T getLast() const { return last == NULL ? T() : last->data; }
 
@@ -188,7 +185,7 @@ bool LinkedList<T>::add(size_t index, T _t){
 template<typename T>
 bool LinkedList<T>::add(T _t){
 
-  ListNode<T> *tmp = new ListNode<T>();
+  auto *tmp = new ListNode<T>();
   tmp->data = _t;
   tmp->next = NULL;
 
@@ -214,7 +211,7 @@ bool LinkedList<T>::unshift(T _t){
   if(_size == 0)
     return add(_t);
 
-  ListNode<T> *tmp = new ListNode<T>();
+  auto *tmp = new ListNode<T>();
   tmp->next = root;
   root->prev = tmp;
   tmp->data = _t;
@@ -226,9 +223,9 @@ bool LinkedList<T>::unshift(T _t){
 }
 
 template<typename T>
-bool LinkedList<T>::set(size_t index, T _t){
+bool LinkedList<T>::set(const size_t index, T _t){
   // Check if index position is in bounds
-  if(index < 0 || index >= _size)
+  if(index >= _size)
     return false;
 
   getNode(index)->data = _t;
@@ -299,8 +296,8 @@ void LinkedList<T>::remove(ListNode<T>* node){
 }
 
 template<typename T>
-T LinkedList<T>::remove(size_t index){
-  if (index < 0 || index >= _size)
+T LinkedList<T>::remove(const size_t index){
+  if (index >= _size)
   {
     return T();
   }
@@ -336,4 +333,3 @@ void LinkedList<T>::clear(){
   while(size() > 0)
     shift();
 }
-#endif

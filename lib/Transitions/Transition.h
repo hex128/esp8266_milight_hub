@@ -1,15 +1,15 @@
+#pragma once
+
 #include <BulbId.h>
 #include <ArduinoJson.h>
 #include <GroupStateField.h>
 #include <stdint.h>
-#include <stddef.h>
 #include <functional>
 #include <memory>
 
-#pragma once
-
 class Transition {
 public:
+  virtual ~Transition() = default;
   using TransitionFn = std::function<void(const BulbId& bulbId, GroupStateField field, uint16_t value)>;
 
   // transition commands are in seconds, convert to ms.
@@ -21,7 +21,8 @@ public:
 
   class Builder {
   public:
-    Builder(size_t id, uint16_t defaultPeriod, const BulbId& bulbId, TransitionFn callback, size_t maxSteps);
+    virtual ~Builder() = default;
+    Builder(size_t id, uint16_t defaultPeriod, const BulbId& bulbId, const TransitionFn &callback, size_t maxSteps);
 
     Builder& setDuration(float duration);
     Builder& setPeriod(size_t period);
@@ -79,12 +80,12 @@ public:
     size_t id,
     const BulbId& bulbId,
     size_t period,
-    TransitionFn callback
+    const TransitionFn &callback
   );
 
   void tick();
   virtual bool isFinished() = 0;
-  void serialize(JsonObject& doc);
+  void serialize(JsonObject& json);
   virtual void step() = 0;
   virtual void childSerialize(JsonObject& doc) = 0;
 

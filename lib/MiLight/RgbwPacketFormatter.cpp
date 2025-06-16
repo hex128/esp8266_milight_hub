@@ -45,19 +45,19 @@ void RgbwPacketFormatter::previousMode() {
 
 uint8_t RgbwPacketFormatter::currentMode() {
   const GroupState* state = stateStore->get(deviceId, groupId, REMOTE_TYPE_RGBW);
-  return state != NULL ? state->getMode() : 0;
+  return state != nullptr ? state->getMode() : 0;
 }
 
-void RgbwPacketFormatter::updateMode(uint8_t mode) {
+void RgbwPacketFormatter::updateMode(const uint8_t mode) {
   command(RGBW_DISCO_MODE, 0);
   currentPacket[0] = RGBW_PROTOCOL_ID_BYTE | mode;
 }
 
-void RgbwPacketFormatter::updateStatus(MiLightStatus status, uint8_t groupId) {
+void RgbwPacketFormatter::updateStatus(const MiLightStatus status, const uint8_t groupId) {
   command(STATUS_COMMAND(status, groupId), 0);
 }
 
-void RgbwPacketFormatter::updateBrightness(uint8_t value) {
+void RgbwPacketFormatter::updateBrightness(const uint8_t value) {
   // Expect an input value in [0, 100]. Map it down to [0, 25].
   const uint8_t adjustedBrightness = Units::rescale(value, 25, 100);
 
@@ -79,28 +79,28 @@ void RgbwPacketFormatter::command(uint8_t command, uint8_t arg) {
   currentPacket[RGBW_COMMAND_INDEX] = command;
 }
 
-void RgbwPacketFormatter::updateHue(uint16_t value) {
+void RgbwPacketFormatter::updateHue(const uint16_t value) {
   const int16_t remappedColor = (value + 40) % 360;
   updateColorRaw(Units::rescale(remappedColor, 255, 360));
 }
 
-void RgbwPacketFormatter::updateColorRaw(uint8_t value) {
+void RgbwPacketFormatter::updateColorRaw(const uint8_t value) {
   command(RGBW_COLOR, 0);
   currentPacket[RGBW_COLOR_INDEX] = value;
 }
 
 void RgbwPacketFormatter::updateColorWhite() {
-  uint8_t button = RGBW_GROUP_1_MAX_LEVEL + ((groupId - 1)*2);
+  const uint8_t button = RGBW_GROUP_1_MAX_LEVEL + ((groupId - 1)*2);
   command(button, 0);
 }
 
 void RgbwPacketFormatter::enableNightMode() {
-  uint8_t button = STATUS_COMMAND(OFF, groupId);
+  const uint8_t button = STATUS_COMMAND(OFF, groupId);
 
   // Bulbs must be OFF for night mode to work in RGBW.
   // Turn it off if it isn't already off.
   const GroupState* state = stateStore->get(deviceId, groupId, REMOTE_TYPE_RGBW);
-  if (state == NULL || state->getState() == MiLightStatus::ON) {
+  if (state == nullptr || state->getState() == ON) {
     command(button, 0);
   }
 
@@ -109,8 +109,8 @@ void RgbwPacketFormatter::enableNightMode() {
   command(button | 0x10, 0);
 }
 
-BulbId RgbwPacketFormatter::parsePacket(const uint8_t* packet, JsonObject result) {
-  uint8_t command = packet[RGBW_COMMAND_INDEX] & 0x7F;
+BulbId RgbwPacketFormatter::parsePacket(const uint8_t* packet, const JsonObject result) {
+  const uint8_t command = packet[RGBW_COMMAND_INDEX] & 0x7F;
 
   BulbId bulbId(
     (packet[1] << 8) | packet[2],
@@ -156,5 +156,5 @@ BulbId RgbwPacketFormatter::parsePacket(const uint8_t* packet, JsonObject result
 }
 
 void RgbwPacketFormatter::format(uint8_t const* packet, char* buffer) {
-  PacketFormatter::formatV1Packet(packet, buffer);
+  formatV1Packet(packet, buffer);
 }

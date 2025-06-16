@@ -8,8 +8,8 @@ bool V6RgbCommandHandler::handlePreset(
 
 bool V6RgbCommandHandler::handleCommand(
     MiLightClient* client,
-    uint32_t command,
-    uint32_t commandArg)
+    const uint32_t command,
+    const uint32_t commandArg)
 {
   const uint8_t cmd = command & 0x7F;
   const uint8_t arg = commandArg >> 24;
@@ -55,7 +55,8 @@ bool V6RgbCommandHandler::handleCommand(
     }
 
     return true;
-  } else if (cmd == V2_RGB_COLOR_PREFIX) {
+  }
+  if (cmd == V2_RGB_COLOR_PREFIX) {
     client->updateColorRaw(arg);
     return true;
   }

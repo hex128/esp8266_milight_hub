@@ -20,11 +20,11 @@ const MiLightRemoteConfig* MiLightRemoteConfig::fromType(const String& type) {
   return fromType(MiLightRemoteTypeHelpers::remoteTypeFromString(type));
 }
 
-const MiLightRemoteConfig* MiLightRemoteConfig::fromType(MiLightRemoteType type) {
+const MiLightRemoteConfig* MiLightRemoteConfig::fromType(const MiLightRemoteType type) {
   if (type == REMOTE_TYPE_UNKNOWN || type >= size(ALL_REMOTES)) {
     Serial.print(F("MiLightRemoteConfig::fromType: ERROR - tried to fetch remote config for unknown type: "));
     Serial.println(type);
-    return NULL;
+    return nullptr;
   }
 
   return ALL_REMOTES[type];
@@ -35,8 +35,8 @@ const MiLightRemoteConfig* MiLightRemoteConfig::fromReceivedPacket(
   const uint8_t* packet,
   const size_t len
 ) {
-  for (size_t i = 0; i < MiLightRemoteConfig::NUM_REMOTES; i++) {
-    const MiLightRemoteConfig* config = MiLightRemoteConfig::ALL_REMOTES[i];
+  for (size_t i = 0; i < NUM_REMOTES; i++) {
+    const MiLightRemoteConfig* config = ALL_REMOTES[i];
     if (&config->radioConfig == &radioConfig
       && config->packetFormatter->canHandle(packet, len)) {
       return config;
@@ -48,7 +48,7 @@ const MiLightRemoteConfig* MiLightRemoteConfig::fromReceivedPacket(
   Serial.println(F("MiLightRemoteConfig::fromReceivedPacket: ERROR - tried to fetch remote config for unknown packet"));
 #endif
 
-  return NULL;
+  return nullptr;
 }
 
 const MiLightRemoteConfig FUT096Config( //rgbw

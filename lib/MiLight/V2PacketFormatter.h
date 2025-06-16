@@ -1,8 +1,6 @@
-#include <inttypes.h>
-#include <PacketFormatter.h>
+#pragma once
 
-#ifndef _V2_PACKET_FORMATTER
-#define _V2_PACKET_FORMATTER
+#include <PacketFormatter.h>
 
 #define V2_PACKET_LEN 9
 
@@ -15,17 +13,17 @@
 
 class V2PacketFormatter : public PacketFormatter {
 public:
-  V2PacketFormatter(const MiLightRemoteType deviceType, uint8_t protocolId, uint8_t numGroups);
+  V2PacketFormatter(MiLightRemoteType deviceType, uint8_t protocolId, uint8_t numGroups);
 
-  virtual bool canHandle(const uint8_t* packet, const size_t packetLen);
-  virtual void initializePacket(uint8_t* packet);
+  bool canHandle(const uint8_t* packet, size_t packetLen) override;
+  void initializePacket(uint8_t* packet) override;
 
-  virtual void updateStatus(MiLightStatus status, uint8_t group);
-  virtual void command(uint8_t command, uint8_t arg);
-  virtual void format(uint8_t const* packet, char* buffer);
-  virtual void unpair();
+  void updateStatus(MiLightStatus status, uint8_t group) override;
+  void command(uint8_t command, uint8_t arg) override;
+  void format(uint8_t const* packet, char* buffer) override;
+  void unpair() override;
 
-  virtual void finalizePacket(uint8_t* packet);
+  void finalizePacket(uint8_t* packet) override;
 
   uint8_t groupCommandArg(MiLightStatus status, uint8_t groupId);
 
@@ -51,5 +49,3 @@ protected:
   const uint8_t numGroups;
   void switchMode(const GroupState& currentState, BulbMode desiredMode);
 };
-
-#endif

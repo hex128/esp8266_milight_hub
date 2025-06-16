@@ -1,7 +1,6 @@
-#include <V2PacketFormatter.h>
+#pragma once
 
-#ifndef _FUT091_PACKET_FORMATTER_H
-#define _FUT091_PACKET_FORMATTER_H
+#include <V2PacketFormatter.h>
 
 enum class FUT091Command {
   ON_OFF = 0x01,
@@ -9,17 +8,15 @@ enum class FUT091Command {
   KELVIN = 0x03
 };
 
-class FUT091PacketFormatter : public V2PacketFormatter {
+class FUT091PacketFormatter final : public V2PacketFormatter {
 public:
   FUT091PacketFormatter()
-    : V2PacketFormatter(REMOTE_TYPE_FUT091, 0x21, 4)    // protocol is 0x21, and there are 4 groups
+    : V2PacketFormatter(REMOTE_TYPE_FUT091, 0x21, 4) // protocol is 0x21, and there are 4 groups
   { }
 
-  virtual void updateBrightness(uint8_t value);
-  virtual void updateTemperature(uint8_t value);
-  virtual void enableNightMode();
+  void updateBrightness(uint8_t value) override;
+  void updateTemperature(uint8_t value) override;
+  void enableNightMode() override;
 
-  virtual BulbId parsePacket(const uint8_t* packet, JsonObject result);
+  BulbId parsePacket(const uint8_t* packet, JsonObject result) override;
 };
-
-#endif

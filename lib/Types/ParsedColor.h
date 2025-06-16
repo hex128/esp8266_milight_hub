@@ -1,7 +1,6 @@
-#include <stdint.h>
-#include <ArduinoJson.h>
-
 #pragma once
+
+#include <ArduinoJson.h>
 
 struct ParsedColor {
   bool success;

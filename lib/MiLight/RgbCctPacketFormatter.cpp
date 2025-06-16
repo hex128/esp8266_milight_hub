@@ -11,7 +11,7 @@ void RgbCctPacketFormatter::modeSpeedUp() {
   command(RGB_CCT_ON, RGB_CCT_MODE_SPEED_UP);
 }
 
-void RgbCctPacketFormatter::updateMode(uint8_t mode) {
+void RgbCctPacketFormatter::updateMode(const uint8_t mode) {
   lastMode = mode;
   command(RGB_CCT_MODE, mode);
 }
@@ -24,24 +24,24 @@ void RgbCctPacketFormatter::previousMode() {
   updateMode((lastMode-1)%RGB_CCT_NUM_MODES);
 }
 
-void RgbCctPacketFormatter::updateBrightness(uint8_t brightness) {
-  command(RGB_CCT_BRIGHTNESS, RGB_CCT_BRIGHTNESS_OFFSET + brightness);
+void RgbCctPacketFormatter::updateBrightness(const uint8_t value) {
+  command(RGB_CCT_BRIGHTNESS, RGB_CCT_BRIGHTNESS_OFFSET + value);
 }
 
 // change the hue (which may also change to color mode).
-void RgbCctPacketFormatter::updateHue(uint16_t value) {
-  uint8_t remapped = Units::rescale(value, 255, 360);
+void RgbCctPacketFormatter::updateHue(const uint16_t value) {
+  const uint8_t remapped = Units::rescale(value, 255, 360);
   updateColorRaw(remapped);
 }
 
-void RgbCctPacketFormatter::updateColorRaw(uint8_t value) {
+void RgbCctPacketFormatter::updateColorRaw(const uint8_t value) {
   command(RGB_CCT_COLOR, RGB_CCT_COLOR_OFFSET + value);
 }
 
-void RgbCctPacketFormatter::updateTemperature(uint8_t value) {
+void RgbCctPacketFormatter::updateTemperature(const uint8_t value) {
   // Packet scale is [0x94, 0x92, .. 0, .., 0xCE, 0xCC]. Increments of 2.
   // From coolest to warmest.
-  uint8_t cmdValue = V2PacketFormatter::tov2scale(value, RGB_CCT_KELVIN_REMOTE_END, 2);
+  const uint8_t cmdValue = tov2scale(value, RGB_CCT_KELVIN_REMOTE_END, 2);
 
   // when updating temperature, the bulb switches to white.  If we are not already
   // in white mode, that makes changing temperature annoying because the current hue/mode
@@ -53,10 +53,11 @@ void RgbCctPacketFormatter::updateTemperature(uint8_t value) {
   command(RGB_CCT_KELVIN, cmdValue);
 
   // and return to our original mode
-  if (ourState != NULL) {
-    BulbMode originalBulbMode = ourState->getBulbMode();
-
-    if ((settings->enableAutomaticModeSwitching) && (originalBulbMode != BulbMode::BULB_MODE_WHITE)) {
+  if (ourState != nullptr) {
+    if (
+      const BulbMode originalBulbMode = ourState->getBulbMode(); settings->enableAutomaticModeSwitching &&
+      originalBulbMode != BULB_MODE_WHITE
+    ) {
       switchMode(*ourState, originalBulbMode);
     }
   }
@@ -64,26 +65,26 @@ void RgbCctPacketFormatter::updateTemperature(uint8_t value) {
 
 // update saturation.  This only works when in Color mode, so if not in color we switch to color,
 // make the change, and switch back again.
-void RgbCctPacketFormatter::updateSaturation(uint8_t value) {
+void RgbCctPacketFormatter::updateSaturation(const uint8_t value) {
    // look up our current mode
   const GroupState* ourState = this->stateStore->get(this->deviceId, this->groupId, REMOTE_TYPE_RGB_CCT);
-  BulbMode originalBulbMode = BulbMode::BULB_MODE_WHITE;
+  BulbMode originalBulbMode = BULB_MODE_WHITE;
 
-  if (ourState != NULL) {
+  if (ourState != nullptr) {
     originalBulbMode = ourState->getBulbMode();
 
     // are we already in white?  If not, change to white
-    if ((settings->enableAutomaticModeSwitching) && (originalBulbMode != BulbMode::BULB_MODE_COLOR)) {
+    if ((settings->enableAutomaticModeSwitching) && (originalBulbMode != BULB_MODE_COLOR)) {
       updateHue(ourState->getHue());
     }
   }
 
   // now make the saturation change
-  uint8_t remapped = value + RGB_CCT_SATURATION_OFFSET;
+  const uint8_t remapped = value + RGB_CCT_SATURATION_OFFSET;
   command(RGB_CCT_SATURATION, remapped);
 
-  if (ourState != NULL) {
-    if ((settings->enableAutomaticModeSwitching) && (originalBulbMode != BulbMode::BULB_MODE_COLOR)) {
+  if (ourState != nullptr) {
+    if ((settings->enableAutomaticModeSwitching) && (originalBulbMode != BULB_MODE_COLOR)) {
       switchMode(*ourState, originalBulbMode);
     }
   }
@@ -93,21 +94,21 @@ void RgbCctPacketFormatter::updateColorWhite() {
   // there is no direct white command, so let's look up our prior temperature and set that, which
   // causes the bulb to go white
   const GroupState* ourState = this->stateStore->get(this->deviceId, this->groupId, REMOTE_TYPE_RGB_CCT);
-  uint8_t value =
-    ourState == NULL
+  const uint8_t value =
+    ourState == nullptr
       ? 0
-      : V2PacketFormatter::tov2scale(ourState->getKelvin(), RGB_CCT_KELVIN_REMOTE_END, 2);
+      : tov2scale(ourState->getKelvin(), RGB_CCT_KELVIN_REMOTE_END, 2);
 
   // issue command to set kelvin to prior value, which will drive to white
   command(RGB_CCT_KELVIN, value);
 }
 
 void RgbCctPacketFormatter::enableNightMode() {
-  uint8_t arg = groupCommandArg(OFF, groupId);
+  const uint8_t arg = groupCommandArg(OFF, groupId);
   command(RGB_CCT_ON | 0x80, arg);
 }
 
-BulbId RgbCctPacketFormatter::parsePacket(const uint8_t *packet, JsonObject result) {
+BulbId RgbCctPacketFormatter::parsePacket(const uint8_t *packet, const JsonObject result) {
   uint8_t packetCopy[V2_PACKET_LEN];
   memcpy(packetCopy, packet, V2_PACKET_LEN);
   V2RFEncoding::decodeV2Packet(packetCopy);
@@ -118,8 +119,8 @@ BulbId RgbCctPacketFormatter::parsePacket(const uint8_t *packet, JsonObject resu
     REMOTE_TYPE_RGB_CCT
   );
 
-  uint8_t command = (packetCopy[V2_COMMAND_INDEX] & 0x7F);
-  uint8_t arg = packetCopy[V2_ARGUMENT_INDEX];
+  const uint8_t command = (packetCopy[V2_COMMAND_INDEX] & 0x7F);
+  const uint8_t arg = packetCopy[V2_ARGUMENT_INDEX];
 
   if (command == RGB_CCT_ON) {
     if ((packetCopy[V2_COMMAND_INDEX] & 0x80) == 0x80) {
@@ -136,15 +137,15 @@ BulbId RgbCctPacketFormatter::parsePacket(const uint8_t *packet, JsonObject resu
       bulbId.groupId = arg-5;
     }
   } else if (command == RGB_CCT_COLOR) {
-    uint8_t rescaledColor = (arg - RGB_CCT_COLOR_OFFSET) % 0x100;
-    uint16_t hue = Units::rescale<uint16_t, uint16_t>(rescaledColor, 360, 255.0);
+    const uint8_t rescaledColor = (arg - RGB_CCT_COLOR_OFFSET) % 0x100;
+    const uint16_t hue = Units::rescale<uint16_t, uint16_t>(rescaledColor, 360, 255.0);
     result[GroupStateFieldNames::HUE] = hue;
   } else if (command == RGB_CCT_KELVIN) {
-    uint8_t temperature = V2PacketFormatter::fromv2scale(arg, RGB_CCT_KELVIN_REMOTE_END, 2);
+    const uint8_t temperature = fromv2scale(arg, RGB_CCT_KELVIN_REMOTE_END, 2);
     result[GroupStateFieldNames::COLOR_TEMP] = Units::whiteValToMireds(temperature, 100);
   // brightness == saturation
   } else if (command == RGB_CCT_BRIGHTNESS && arg >= (RGB_CCT_BRIGHTNESS_OFFSET - 15)) {
-    uint8_t level = constrain(arg - RGB_CCT_BRIGHTNESS_OFFSET, 0, 100);
+    const uint8_t level = constrain(arg - RGB_CCT_BRIGHTNESS_OFFSET, 0, 100);
     result[GroupStateFieldNames::BRIGHTNESS] = Units::rescale<uint8_t, uint8_t>(level, 255, 100);
   } else if (command == RGB_CCT_SATURATION) {
     result[GroupStateFieldNames::SATURATION] = constrain(arg - RGB_CCT_SATURATION_OFFSET, 0, 100);

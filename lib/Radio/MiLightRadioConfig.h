@@ -1,16 +1,15 @@
+#pragma once
+
 #include <Arduino.h>
 #include <MiLightRemoteType.h>
 #include <Size.h>
 #include <RadioUtils.h>
 
-#ifndef _MILIGHT_RADIO_CONFIG
-#define _MILIGHT_RADIO_CONFIG
-
 #define MILIGHT_MAX_PACKET_LENGTH 9
 
 class MiLightRadioConfig {
 public:
-  static const size_t NUM_CHANNELS = 3;
+  static constexpr size_t NUM_CHANNELS = 3;
 
   // We can set this to two possible values.  It only has an affect on the nRF24 radio.  The
   // LT8900/PL1167 radio will always use the raw syncwords.  For the nRF24, this controls what
@@ -28,7 +27,7 @@ public:
   //
   // In general, this should be set to 5 unless packets that should be showing up are
   // mysteriously not present.
-  static const uint8_t SYNCWORD_LENGTH = 5;
+  static constexpr uint8_t SYNCWORD_LENGTH = 5;
 
   MiLightRadioConfig(
     const uint16_t syncword0,
@@ -52,7 +51,7 @@ public:
     // precompute the syncword for the nRF24.  we include the fixed preamble and trailer in the
     // syncword to avoid needing to bitshift packets.  trailer is 4 bits, so the actual syncword
     // is no longer byte-aligned.
-    if (SYNCWORD_LENGTH == 5) {
+    if constexpr (SYNCWORD_LENGTH == 5) {
       syncwordBytes[ --ix ] = reverseBits(
         ((syncword0 << 4) & 0xF0) | (preamble & 0x0F)
       );
@@ -70,14 +69,12 @@ public:
     }
   }
 
-  uint8_t channels[3];
-  uint8_t syncwordBytes[SYNCWORD_LENGTH];
+  uint8_t channels[3]{};
+  uint8_t syncwordBytes[SYNCWORD_LENGTH]{};
   uint16_t syncword0, syncword3;
 
   const size_t packetLength;
 
-  static const size_t NUM_CONFIGS = 5;
+  static constexpr size_t NUM_CONFIGS = 5;
   static MiLightRadioConfig ALL_CONFIGS[NUM_CONFIGS];
 };
-
-#endif

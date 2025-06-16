@@ -1,13 +1,12 @@
+#pragma once
+
 #include <GroupState.h>
 #include <GroupStateCache.h>
 #include <GroupStatePersistence.h>
 
-#ifndef _GROUP_STATE_STORE_H
-#define _GROUP_STATE_STORE_H
-
 class GroupStateStore {
 public:
-  GroupStateStore(const size_t maxSize, const size_t flushRate);
+  GroupStateStore(size_t maxSize, size_t flushRate);
 
   /*
    * Returns the state for the given BulbId.  If accessing state for a valid device
@@ -17,14 +16,14 @@ public:
    * Otherwise, we return NULL.
    */
   GroupState* get(const BulbId& id);
-  GroupState* get(const uint16_t deviceId, const uint8_t groupId, const MiLightRemoteType deviceType);
+  GroupState* get(uint16_t deviceId, uint8_t groupId, MiLightRemoteType deviceType);
 
   /*
    * Sets the state for the given BulbId.  State will be marked as dirty and
    * flushed to persistent storage.
    */
   GroupState* set(const BulbId& id, const GroupState& state);
-  GroupState* set(const uint16_t deviceId, const uint8_t groupId, const MiLightRemoteType deviceType, const GroupState& state);
+  GroupState* set(uint16_t deviceId, uint8_t groupId, MiLightRemoteType deviceType, const GroupState& state);
 
   void clear(const BulbId& id);
 
@@ -49,5 +48,3 @@ private:
 
   void trackEviction();
 };
-
-#endif

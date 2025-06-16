@@ -1,6 +1,6 @@
-#include <FUT02xPacketFormatter.h>
-
 #pragma once
+
+#include <FUT02xPacketFormatter.h>
 
 enum class FUT020Command {
   ON_OFF             = 0x04,
@@ -11,20 +11,20 @@ enum class FUT020Command {
   COLOR              = 0x00
 };
 
-class FUT020PacketFormatter : public FUT02xPacketFormatter {
+class FUT020PacketFormatter final : public FUT02xPacketFormatter {
 public:
   FUT020PacketFormatter()
     : FUT02xPacketFormatter(REMOTE_TYPE_FUT020)
   { }
 
-  virtual void updateStatus(MiLightStatus status, uint8_t groupId);
-  virtual void updateHue(uint16_t value);
-  virtual void updateColorRaw(uint8_t value);
-  virtual void updateColorWhite();
-  virtual void nextMode();
-  virtual void updateBrightness(uint8_t value);
-  virtual void increaseBrightness();
-  virtual void decreaseBrightness();
+  void updateStatus(MiLightStatus status, uint8_t groupId) override;
+  void updateHue(uint16_t value) override;
+  void updateColorRaw(uint8_t value) override;
+  void updateColorWhite() override;
+  void nextMode() override;
+  void updateBrightness(uint8_t value) override;
+  void increaseBrightness() override;
+  void decreaseBrightness() override;
 
-  virtual BulbId parsePacket(const uint8_t* packet, JsonObject result) override;
+  BulbId parsePacket(const uint8_t* packet, JsonObject result) override;
 };

@@ -1,9 +1,4 @@
-//
-// Created by chris on 9/17/2023.
-//
-
-#ifndef ESP8266_MILIGHT_HUB_PROJECTWIFI_H
-#define ESP8266_MILIGHT_HUB_PROJECTWIFI_H
+#pragma once
 
 #if __has_include(<wifi_credentials.h>)
 #include <wifi_credentials.h>
@@ -32,5 +27,3 @@
 #else
 #define ESPMH_SETUP_WIFI(settings) { }
 #endif
-
-#endif //ESP8266_MILIGHT_HUB_PROJECTWIFI_H

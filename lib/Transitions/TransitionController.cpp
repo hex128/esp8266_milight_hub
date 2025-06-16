@@ -17,7 +17,7 @@ TransitionController::TransitionController()
   , defaultPeriod(500)
 { }
 
-void TransitionController::setDefaultPeriod(uint16_t defaultPeriod) {
+void TransitionController::setDefaultPeriod(const uint16_t defaultPeriod) {
   this->defaultPeriod = defaultPeriod;
 }
 
@@ -52,7 +52,7 @@ std::shared_ptr<Transition::Builder> TransitionController::buildFieldTransition(
   );
 }
 
-std::shared_ptr<Transition::Builder> TransitionController::buildStatusTransition(const BulbId& bulbId, MiLightStatus status, uint8_t startLevel) {
+std::shared_ptr<Transition::Builder> TransitionController::buildStatusTransition(const BulbId& bulbId, const MiLightStatus status, const uint8_t startLevel) {
   std::shared_ptr<Transition::Builder> transition;
 
   if (status == ON) {
@@ -76,7 +76,7 @@ void TransitionController::addTransition(std::shared_ptr<Transition> transition)
   activeTransitions.add(transition);
 }
 
-void TransitionController::transitionCallback(const BulbId& bulbId, GroupStateField field, uint16_t arg) {
+void TransitionController::transitionCallback(const BulbId& bulbId, const GroupStateField field, const uint16_t arg) {
   for (auto it = observers.begin(); it != observers.end(); ++it) {
     (*it)(bulbId, field, arg);
   }
@@ -90,7 +90,7 @@ void TransitionController::loop() {
   auto current = activeTransitions.getHead();
 
   while (current != nullptr) {
-    auto next = current->next;
+    const auto next = current->next;
 
     Transition& t = *current->data;
     t.tick();
@@ -107,7 +107,7 @@ ListNode<std::shared_ptr<Transition>>* TransitionController::getTransitions() {
   return activeTransitions.getHead();
 }
 
-ListNode<std::shared_ptr<Transition>>* TransitionController::findTransition(size_t id) {
+ListNode<std::shared_ptr<Transition>>* TransitionController::findTransition(const size_t id) {
   auto current = getTransitions();
 
   while (current != nullptr) {
@@ -120,20 +120,16 @@ ListNode<std::shared_ptr<Transition>>* TransitionController::findTransition(size
   return nullptr;
 }
 
-Transition* TransitionController::getTransition(size_t id) {
-  auto node = findTransition(id);
-
-  if (node == nullptr) {
+Transition* TransitionController::getTransition(const size_t id) {
+  if (const auto node = findTransition(id); node == nullptr) {
     return nullptr;
   } else {
     return node->data.get();
   }
 }
 
-bool TransitionController::deleteTransition(size_t id) {
-  auto node = findTransition(id);
-
-  if (node == nullptr) {
+bool TransitionController::deleteTransition(const size_t id) {
+  if (const auto node = findTransition(id); node == nullptr) {
     return false;
   } else {
     activeTransitions.remove(node);

@@ -4,6 +4,7 @@
  *  Created on: 29 May 2015
  *      Author: henryk
  */
+#pragma once
 
 #ifdef ARDUINO
 #include "Arduino.h"
@@ -12,9 +13,6 @@
 #include "RF24.h"
 
 // #define DEBUG_PRINTF
-
-#ifndef PL1167_NRF24_H_
-#define PL1167_NRF24_H_
 
 class PL1167_nRF24 {
   public:
@@ -51,6 +49,3 @@ class PL1167_nRF24 {
     int internal_receive();
 
 };
-
-
-#endif /* PL1167_NRF24_H_ */

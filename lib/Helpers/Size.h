@@ -1,11 +1,8 @@
-#include <Arduino.h>
+#pragma once
 
-#ifndef _SIZE_H
-#define _SIZE_H
+#include <cstddef>
 
 template<typename T, size_t sz>
 size_t size(T(&)[sz]) {
     return sz;
 }
-
-#endif

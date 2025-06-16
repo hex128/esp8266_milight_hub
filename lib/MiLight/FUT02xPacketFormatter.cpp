@@ -1,9 +1,9 @@
 #include <FUT02xPacketFormatter.h>
 
-static const uint8_t FUT02X_PACKET_HEADER = 0xA5;
+static constexpr uint8_t FUT02X_PACKET_HEADER = 0xA5;
 
-static const uint8_t FUT02X_PAIR_COMMAND = 0x03;
-static const uint8_t FUT02X_UNPAIR_COMMAND = 0x03;
+static constexpr uint8_t FUT02X_PAIR_COMMAND = 0x03;
+[[maybe_unused]] static constexpr uint8_t FUT02X_UNPAIR_COMMAND = 0x03;
 
 void FUT02xPacketFormatter::initializePacket(uint8_t *packet) {
   size_t packetPtr = 0;
@@ -13,14 +13,14 @@ void FUT02xPacketFormatter::initializePacket(uint8_t *packet) {
   packet[packetPtr++] = deviceId & 0xFF;
   packet[packetPtr++] = 0; // arg
   packet[packetPtr++] = 0; // command
-  packet[packetPtr++] = sequenceNum++;
+  packet[packetPtr] = sequenceNum++;
 }
 
 bool FUT02xPacketFormatter::canHandle(const uint8_t* packet, const size_t len) {
   return len == packetLength && packet[0] == FUT02X_PACKET_HEADER;
 }
 
-void FUT02xPacketFormatter::command(uint8_t command, uint8_t arg) {
+void FUT02xPacketFormatter::command(uint8_t command, const uint8_t arg) {
   pushPacket();
   if (held) {
     command |= 0x10;

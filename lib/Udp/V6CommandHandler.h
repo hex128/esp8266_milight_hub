@@ -1,8 +1,7 @@
+#pragma once
+
 #include <MiLightClient.h>
 #include <MiLightRadioConfig.h>
-
-#ifndef _V6_COMMAND_HANDLER_H
-#define _V6_COMMAND_HANDLER_H
 
 enum V6CommandTypes {
   V6_PAIR = 0x3D,
@@ -13,6 +12,7 @@ enum V6CommandTypes {
 
 class V6CommandHandler {
 public:
+  virtual ~V6CommandHandler() = default;
   static V6CommandHandler* ALL_HANDLERS[];
   static const size_t NUM_HANDLERS;
 
@@ -81,5 +81,3 @@ protected:
     uint32_t commandArg
   );
 };
-
-#endif

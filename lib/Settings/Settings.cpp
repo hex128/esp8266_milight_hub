@@ -1,3 +1,4 @@
+// ReSharper disable CppExpressionWithoutSideEffects
 #include <Settings.h>
 #include <ArduinoJson.h>
 #include <IntParsing.h>
@@ -13,7 +14,7 @@
 
 #define PORT_POSITION(s) ( s.indexOf(':') )
 
-GatewayConfig::GatewayConfig(uint16_t deviceId, uint16_t port, uint8_t protocolVersion)
+GatewayConfig::GatewayConfig(const uint16_t deviceId, const uint16_t port, const uint8_t protocolVersion)
   : deviceId(deviceId)
   , port(port)
   , protocolVersion(protocolVersion)
@@ -31,11 +32,11 @@ const String& Settings::getPassword() const {
   return adminPassword;
 }
 
-bool Settings::isAutoRestartEnabled() {
+bool Settings::isAutoRestartEnabled() const {
   return _autoRestartPeriod > 0;
 }
 
-size_t Settings::getAutoRestartPeriod() {
+size_t Settings::getAutoRestartPeriod() const {
   if (_autoRestartPeriod == 0) {
     return 0;
   }
@@ -43,7 +44,7 @@ size_t Settings::getAutoRestartPeriod() {
   return std::max(_autoRestartPeriod, static_cast<size_t>(MINIMUM_RESTART_PERIOD));
 }
 
-void Settings::updateDeviceIds(JsonArray arr) {
+void Settings::updateDeviceIds(const JsonArray arr) {
   this->deviceIds.clear();
 
   for (size_t i = 0; i < arr.size(); ++i) {
@@ -51,7 +52,7 @@ void Settings::updateDeviceIds(JsonArray arr) {
   }
 }
 
-void Settings::updateGatewayConfigs(JsonArray arr) {
+void Settings::updateGatewayConfigs(const JsonArray arr) {
   gatewayConfigs.clear();
 
   for (size_t i = 0; i < arr.size(); i++) {
@@ -67,7 +68,7 @@ void Settings::updateGatewayConfigs(JsonArray arr) {
   }
 }
 
-void Settings::patch(JsonObject parsedSettings) {
+void Settings::patch(const JsonObject parsedSettings) {
   if (parsedSettings.isNull()) {
     Serial.println(F("Skipping patching loaded settings.  Parsed settings was null."));
     return;
@@ -147,11 +148,11 @@ void Settings::patch(JsonObject parsedSettings) {
   }
 
   if (parsedSettings.containsKey(FPSTR(SettingsKeys::DEVICE_IDS))) {
-    JsonArray arr = parsedSettings[FPSTR(SettingsKeys::DEVICE_IDS)];
+    const JsonArray arr = parsedSettings[FPSTR(SettingsKeys::DEVICE_IDS)];
     updateDeviceIds(arr);
   }
   if (parsedSettings.containsKey(FPSTR(SettingsKeys::GATEWAY_CONFIGS))) {
-    JsonArray arr = parsedSettings[FPSTR(SettingsKeys::GATEWAY_CONFIGS)];
+    const JsonArray arr = parsedSettings[FPSTR(SettingsKeys::GATEWAY_CONFIGS)];
     updateGatewayConfigs(arr);
   }
   if (parsedSettings.containsKey(FPSTR(SettingsKeys::GROUP_STATE_FIELDS))) {
@@ -166,8 +167,8 @@ void Settings::patch(JsonObject parsedSettings) {
   }
 }
 
-std::map<String, GroupAlias>::const_iterator Settings::findAlias(MiLightRemoteType deviceType, uint16_t deviceId, uint8_t groupId) {
-  BulbId searchId{ deviceId, groupId, deviceType };
+std::map<String, GroupAlias>::const_iterator Settings::findAlias(const MiLightRemoteType deviceType, const uint16_t deviceId, const uint8_t groupId) {
+  const BulbId searchId{ deviceId, groupId, deviceType };
 
   for (auto it = groupIdAliases.begin(); it != groupIdAliases.end(); ++it) {
     if (searchId == it->second.bulbId) {
@@ -178,8 +179,8 @@ std::map<String, GroupAlias>::const_iterator Settings::findAlias(MiLightRemoteTy
   return groupIdAliases.end();
 }
 
-void Settings::parseGroupIdAliases(JsonObject json) {
-  JsonObject aliases = json[FPSTR(SettingsKeys::GROUP_ID_ALIASES)].as<JsonObject>();
+void Settings::parseGroupIdAliases(const JsonObject json) {
+  const JsonObject aliases = json[FPSTR(SettingsKeys::GROUP_ID_ALIASES)].as<JsonObject>();
 
   // Save group IDs that were deleted so that they can be processed by discovery
   // if necessary
@@ -204,8 +205,8 @@ void Settings::parseGroupIdAliases(JsonObject json) {
   }
 }
 
-void Settings::dumpGroupIdAliases(JsonObject json) {
-  JsonObject aliases = json.createNestedObject(FPSTR(SettingsKeys::GROUP_ID_ALIASES));
+void Settings::dumpGroupIdAliases(const JsonObject json) const {
+  const JsonObject aliases = json.createNestedObject(FPSTR(SettingsKeys::GROUP_ID_ALIASES));
 
   for (auto & groupIdAlias : groupIdAliases) {
     JsonArray bulbProps = aliases.createNestedArray(groupIdAlias.first);
@@ -232,9 +233,8 @@ bool Settings::loadAliases(Settings &settings) {
     printf_P(PSTR("loaded %d aliases\n"), settings.groupIdAliases.size());
 
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
 bool Settings::load(Settings& settings) {
@@ -247,11 +247,11 @@ bool Settings::load(Settings& settings) {
     File f = ProjectFS.open(SETTINGS_FILE, "r");
 
     DynamicJsonDocument json(MILIGHT_HUB_SETTINGS_BUFFER_SIZE);
-    auto error = deserializeJson(json, f);
+    const auto error = deserializeJson(json, f);
     f.close();
 
     if (! error) {
-      JsonObject parsedSettings = json.as<JsonObject>();
+      const JsonObject parsedSettings = json.as<JsonObject>();
       settings.patch(parsedSettings);
     } else {
       Serial.print(F("Error parsing saved settings file: "));
@@ -284,10 +284,8 @@ bool Settings::load(Settings& settings) {
   return true;
 }
 
-void Settings::save() {
-  File f = ProjectFS.open(SETTINGS_FILE, "w");
-
-  if (!f) {
+void Settings::save() const {
+  if (File f = ProjectFS.open(SETTINGS_FILE, "w"); !f) {
     Serial.println(F("Opening settings file failed"));
     return;
   } else {
@@ -297,9 +295,7 @@ void Settings::save() {
     f.close();
   }
 
-  File aliasesFile = ProjectFS.open(ALIASES_FILE, "w");
-
-  if (!aliasesFile) {
+  if (File aliasesFile = ProjectFS.open(ALIASES_FILE, "w"); !aliasesFile) {
     Serial.println(F("Opening aliases file failed"));
   } else {
     WriteBufferingStream aliases{aliasesFile, 64};
@@ -359,10 +355,10 @@ void Settings::serialize(Print& stream, const bool prettyPrint) const {
   JsonArray channelArr = root.createNestedArray(FPSTR(SettingsKeys::RF24_CHANNELS));
   JsonHelpers::vectorToJsonArr<RF24Channel, String>(channelArr, rf24Channels, RF24ChannelHelpers::nameFromValue);
 
-  JsonArray deviceIdsArr = root.createNestedArray(FPSTR(SettingsKeys::DEVICE_IDS));
+  const JsonArray deviceIdsArr = root.createNestedArray(FPSTR(SettingsKeys::DEVICE_IDS));
   JsonHelpers::copyFrom<uint16_t>(deviceIdsArr, this->deviceIds);
 
-  JsonArray gatewayConfigsArr = root.createNestedArray(FPSTR(SettingsKeys::GATEWAY_CONFIGS));
+  const JsonArray gatewayConfigsArr = root.createNestedArray(FPSTR(SettingsKeys::GATEWAY_CONFIGS));
   for (size_t i = 0; i < this->gatewayConfigs.size(); i++) {
     JsonArray elmt = gatewayConfigsArr.createNestedArray();
     elmt.add(this->gatewayConfigs[i]->deviceId);
@@ -381,34 +377,30 @@ void Settings::serialize(Print& stream, const bool prettyPrint) const {
 }
 
 String Settings::mqttServer() {
-  int pos = PORT_POSITION(_mqttServer);
-
-  if (pos == -1) {
+  if (const int pos = PORT_POSITION(_mqttServer); pos == -1) {
     return _mqttServer;
   } else {
     return _mqttServer.substring(0, pos);
   }
 }
 
-uint16_t Settings::mqttPort() {
-  int pos = PORT_POSITION(_mqttServer);
+uint16_t Settings::mqttPort() const {
+  const int pos = PORT_POSITION(_mqttServer);
 
   if (pos == -1) {
     return DEFAULT_MQTT_PORT;
-  } else {
-    return atoi(_mqttServer.c_str() + pos + 1);
   }
+  return atoi(_mqttServer.c_str() + pos + 1);
 }
 
 RadioInterfaceType Settings::typeFromString(const String& s) {
   if (s.equalsIgnoreCase("lt8900")) {
     return LT8900;
-  } else {
-    return nRF24;
   }
+  return nRF24;
 }
 
-String Settings::typeToString(RadioInterfaceType type) {
+String Settings::typeToString(const RadioInterfaceType type) {
   switch (type) {
     case LT8900:
       return "LT8900";
@@ -422,14 +414,14 @@ String Settings::typeToString(RadioInterfaceType type) {
 WifiMode Settings::wifiModeFromString(const String& mode) {
   if (mode.equalsIgnoreCase("b")) {
     return WifiMode::B;
-  } else if (mode.equalsIgnoreCase("g")) {
-    return WifiMode::G;
-  } else {
-    return WifiMode::N;
   }
+  if (mode.equalsIgnoreCase("g")) {
+    return WifiMode::G;
+  }
+  return WifiMode::N;
 }
 
-String Settings::wifiModeToString(WifiMode mode) {
+String Settings::wifiModeToString(const WifiMode mode) {
   switch (mode) {
     case WifiMode::B:
       return "b";
@@ -445,7 +437,7 @@ void Settings::addAlias(const char *alias, const BulbId &bulbId) {
   groupIdAliases[alias] = GroupAlias(groupIdAliasNextId++, alias, bulbId);
 }
 
-bool Settings::deleteAlias(size_t id) {
+bool Settings::deleteAlias(const size_t id) {
   for (auto it = groupIdAliases.begin(); it != groupIdAliases.end(); ++it) {
     if (it->second.id == id) {
       groupIdAliases.erase(it);
@@ -458,7 +450,7 @@ bool Settings::deleteAlias(size_t id) {
   return false;
 }
 
-std::map<String, GroupAlias>::const_iterator Settings::findAliasById(size_t id) {
+std::map<String, GroupAlias>::const_iterator Settings::findAliasById(const size_t id) {
   for (auto it = groupIdAliases.begin(); it != groupIdAliases.end(); ++it) {
     if (it->second.id == id) {
       return it;

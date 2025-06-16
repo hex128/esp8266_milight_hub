@@ -1,7 +1,6 @@
-#include <PacketFormatter.h>
+#pragma once
 
-#ifndef _CCT_PACKET_FORMATTER_H
-#define _CCT_PACKET_FORMATTER_H
+#include <PacketFormatter.h>
 
 #define CCT_COMMAND_INDEX 4
 #define CCT_INTERVALS 10
@@ -23,34 +22,32 @@ enum MiLightCctButton {
   CCT_TEMPERATURE_DOWN  = 0x0F
 };
 
-class CctPacketFormatter : public PacketFormatter {
+class CctPacketFormatter final : public PacketFormatter {
 public:
   CctPacketFormatter()
     : PacketFormatter(REMOTE_TYPE_CCT, 7, 20)
   { }
 
-  virtual bool canHandle(const uint8_t* packet, const size_t len);
+  bool canHandle(const uint8_t* packet, size_t len) override;
 
-  virtual void updateStatus(MiLightStatus status, uint8_t groupId);
-  virtual void command(uint8_t command, uint8_t arg);
+  void updateStatus(MiLightStatus status, uint8_t groupId) override;
+  void command(uint8_t command, uint8_t arg) override;
 
-  virtual void updateTemperature(uint8_t value);
-  virtual void increaseTemperature();
-  virtual void decreaseTemperature();
+  void updateTemperature(uint8_t value) override;
+  void increaseTemperature() override;
+  void decreaseTemperature() override;
 
-  virtual void updateBrightness(uint8_t value);
-  virtual void increaseBrightness();
-  virtual void decreaseBrightness();
-  virtual void enableNightMode();
+  void updateBrightness(uint8_t value) override;
+  void increaseBrightness() override;
+  void decreaseBrightness() override;
+  void enableNightMode() override;
 
-  virtual void format(uint8_t const* packet, char* buffer);
-  virtual void initializePacket(uint8_t* packet);
-  virtual void finalizePacket(uint8_t* packet);
-  virtual BulbId parsePacket(const uint8_t* packet, JsonObject result);
+  void format(uint8_t const* packet, char* buffer) override;
+  void initializePacket(uint8_t* packet) override;
+  void finalizePacket(uint8_t* packet) override;
+  BulbId parsePacket(const uint8_t* packet, JsonObject result) override;
 
   static uint8_t getCctStatusButton(uint8_t groupId, MiLightStatus status);
   static uint8_t cctCommandIdToGroup(uint8_t command);
   static MiLightStatus cctCommandToStatus(uint8_t command);
 };
-
-#endif

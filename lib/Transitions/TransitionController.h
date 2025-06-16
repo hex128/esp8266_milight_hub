@@ -1,11 +1,11 @@
+#pragma once
+
 #include <Transition.h>
 #include <LinkedList.h>
 #include <ParsedColor.h>
 #include <GroupStateField.h>
 #include <memory>
 #include <vector>
-
-#pragma once
 
 class TransitionController {
 public:

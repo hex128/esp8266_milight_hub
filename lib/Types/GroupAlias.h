@@ -1,19 +1,18 @@
+#pragma once
+
 #include <Stream.h>
 #include <BulbId.h>
 
 #include <map>
 
-#ifndef ESP8266_MILIGHT_HUB_GROUPALIAS_H
-#define ESP8266_MILIGHT_HUB_GROUPALIAS_H
-
 #define MAX_ALIAS_LEN 32
 
 struct GroupAlias {
-    size_t id;
-    char alias[MAX_ALIAS_LEN + 1];
+    size_t id{};
+    char alias[MAX_ALIAS_LEN + 1]{};
     BulbId bulbId;
 
-    GroupAlias(size_t id, const char* alias, const BulbId& bulbId)
+    GroupAlias(const size_t id, const char* alias, const BulbId& bulbId)
       : id(id)
       , bulbId(bulbId)
     {
@@ -30,5 +29,3 @@ struct GroupAlias {
     static void loadAliases(Stream& stream, std::map<String, GroupAlias>& aliases);
     static void saveAliases(Stream& stream, const std::map<String, GroupAlias>& aliases);
 };
-
-#endif //ESP8266_MILIGHT_HUB_GROUPALIAS_H

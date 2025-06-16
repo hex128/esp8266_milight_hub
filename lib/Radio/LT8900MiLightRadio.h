@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef ARDUINO
 #include "Arduino.h"
 #else
@@ -37,20 +39,17 @@
 #define DEFAULT_TIME_BETWEEN_RETRANSMISSIONS_uS	350
 // #define DEFAULT_TIME_BETWEEN_RETRANSMISSIONS_uS	0
 
-#ifndef MILIGHTRADIOPL1167_LT8900_H_
-#define MILIGHTRADIOPL1167_LT8900_H_
-
-class LT8900MiLightRadio : public MiLightRadio {
+class LT8900MiLightRadio final : public MiLightRadio {
   public:
     LT8900MiLightRadio(byte byCSPin, byte byResetPin, byte byPktFlag, const MiLightRadioConfig& config);
 
-    virtual int begin();
-    virtual bool available();
-    virtual int read(uint8_t frame[], size_t &frame_length);
-    virtual int write(uint8_t frame[], size_t frame_length);
-    virtual int resend();
-    virtual int configure();
-    virtual const MiLightRadioConfig& config();
+    int begin() override;
+    bool available() override;
+    int read(uint8_t frame[], size_t &frame_length) override;
+    int write(uint8_t frame[], size_t frame_length) override;
+    int resend() override;
+    int configure() override;
+    const MiLightRadioConfig& config() override;
 
   private:
 
@@ -60,14 +59,14 @@ class LT8900MiLightRadio : public MiLightRadio {
     void regWrite16(byte ADDR, byte V1, byte V2, byte WAIT);
     uint8_t uiWriteRegister(uint8_t reg, uint16_t data);
 
-    bool bAvailablePin(void);
-    bool bAvailableRegister(void);
+    bool bAvailablePin();
+    bool bAvailableRegister();
     void vStartListening(uint uiChannelToListenTo);
-    void vResumeRX(void);
+    void vResumeRX();
     int iReadRXBuffer(uint8_t *buffer, size_t maxBuffer);
     void vSetChannel(uint8_t channel);
     void vGenericSendPacket(int iMode, int iLength, byte *pbyFrame, byte byChannel );
-    bool bCheckRadioConnection(void);
+    bool bCheckRadioConnection();
     bool sendPacket(uint8_t *data, size_t packetSize,byte byChannel);
 
     byte _pin_pktflag;
@@ -84,7 +83,3 @@ class LT8900MiLightRadio : public MiLightRadio {
     size_t _currentPacketLen;
     size_t _currentPacketPos;
 };
-
-
-
-#endif

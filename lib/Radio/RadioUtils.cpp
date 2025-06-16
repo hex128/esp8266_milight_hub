@@ -1,7 +1,5 @@
 #include <RadioUtils.h>
 
-#include <stdint.h>
-#include <stddef.h>
 #include <Arduino.h>
 
 uint8_t reverseBits(uint8_t byte) {

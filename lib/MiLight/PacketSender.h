@@ -8,7 +8,7 @@
 class PacketSender {
 public:
   typedef std::function<void(uint8_t* packet, const MiLightRemoteConfig& config)> PacketSentHandler;
-  static const size_t DEFAULT_PACKET_SENDS_VALUE = 0;
+  static constexpr size_t DEFAULT_PACKET_SENDS_VALUE = 0;
 
   PacketSender(
     RadioSwitchboard& radioSwitchboard,
@@ -16,7 +16,7 @@ public:
     PacketSentHandler packetSentHandler
   );
 
-  void enqueue(uint8_t* packet, const MiLightRemoteConfig* remoteConfig, const size_t repeatsOverride = 0);
+  void enqueue(uint8_t* packet, const MiLightRemoteConfig* remoteConfig, size_t repeatsOverride = 0);
   void loop();
 
   // Return true if there are queued packets

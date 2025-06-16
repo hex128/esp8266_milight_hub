@@ -2,31 +2,31 @@
 #define _GROUP_STATE_FIELDS_H
 
 namespace GroupStateFieldNames {
-  static const char UNKNOWN[] = "unknown";
-  static const char STATE[] = "state";
-  static const char STATUS[] = "status";
-  static const char BRIGHTNESS[] = "brightness";
-  static const char LEVEL[] = "level";
-  static const char HUE[] = "hue";
-  static const char SATURATION[] = "saturation";
-  static const char COLOR[] = "color";
-  static const char MODE[] = "mode";
-  static const char KELVIN[] = "kelvin";
-  static const char TEMPERATURE[] = "temperature"; //alias for kelvin
-  static const char COLOR_TEMP[] = "color_temp";
-  static const char BULB_MODE[] = "bulb_mode";
-  static const char COMPUTED_COLOR[] = "computed_color";
-  static const char EFFECT[] = "effect";
-  static const char DEVICE_ID[] = "device_id";
-  static const char GROUP_ID[] = "group_id";
-  static const char DEVICE_TYPE[] = "device_type";
-  static const char OH_COLOR[] = "oh_color";
-  static const char HEX_COLOR[] = "hex_color";
-  static const char COMMAND[] = "command";
-  static const char COMMANDS[] = "commands";
+  static constexpr char UNKNOWN[] = "unknown";
+  static constexpr char STATE[] = "state";
+  static constexpr char STATUS[] = "status";
+  static constexpr char BRIGHTNESS[] = "brightness";
+  static constexpr char LEVEL[] = "level";
+  static constexpr char HUE[] = "hue";
+  static constexpr char SATURATION[] = "saturation";
+  static constexpr char COLOR[] = "color";
+  static constexpr char MODE[] = "mode";
+  static constexpr char KELVIN[] = "kelvin";
+  static constexpr char TEMPERATURE[] = "temperature"; //alias for kelvin
+  static constexpr char COLOR_TEMP[] = "color_temp";
+  static constexpr char BULB_MODE[] = "bulb_mode";
+  static constexpr char COMPUTED_COLOR[] = "computed_color";
+  static constexpr char EFFECT[] = "effect";
+  static constexpr char DEVICE_ID[] = "device_id";
+  static constexpr char GROUP_ID[] = "group_id";
+  static constexpr char DEVICE_TYPE[] = "device_type";
+  static constexpr char OH_COLOR[] = "oh_color";
+  static constexpr char HEX_COLOR[] = "hex_color";
+  static constexpr char COMMAND[] = "command";
+  static constexpr char COMMANDS[] = "commands";
 
   // For use with HomeAssistant
-  static const char COLOR_MODE[] = "color_mode";
+  static constexpr char COLOR_MODE[] = "color_mode";
 };
 
 enum class GroupStateField {

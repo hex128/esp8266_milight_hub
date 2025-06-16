@@ -1,8 +1,7 @@
+#pragma once
+
 #include <Arduino.h>
 #include <string.h>
-
-#ifndef _LED_STATUS_H
-#define _LED_STATUS_H
 
 class LEDStatus {
   public:
@@ -16,21 +15,21 @@ class LEDStatus {
       On,
       Unknown
     };
-    LEDStatus(int8_t ledPin);
-    void changePin(int8_t ledPin);
+    LEDStatus(uint8_t ledPin);
+    void changePin(uint8_t ledPin);
     void continuous(LEDMode mode);
     void continuous(uint16_t ledOffMs, uint16_t ledOnMs);
     void oneshot(LEDMode mode, uint8_t count = 1);
     void oneshot(uint16_t ledOffMs, uint16_t ledOnMs, uint8_t count = 1);
 
     static String LEDModeToString(LEDMode mode);
-    static LEDMode stringToLEDMode(String mode);
+    static LEDMode stringToLEDMode(const String &mode);
 
     void handle();
 
   private:
-    void _modeToTime(LEDMode mode, uint16_t& ledOffMs, uint16_t& ledOnMs);
-    uint8_t _pinState(uint8_t val);
+    static void _modeToTime(LEDMode mode, uint16_t& ledOffMs, uint16_t& ledOnMs);
+    uint8_t _pinState(uint8_t val) const;
     uint8_t _ledPin;
     bool _inverse;
 
@@ -38,12 +37,10 @@ class LEDStatus {
     uint16_t _continuousOnMs = 0;
     bool _continuousCurrentlyOn = false;
 
-    uint16_t _oneshotOffMs;
-    uint16_t _oneshotOnMs;
+    uint16_t _oneshotOffMs{};
+    uint16_t _oneshotOnMs{};
     uint8_t _oneshotCountRemaining = 0;
     bool _oneshotCurrentlyOn = false;
 
     unsigned long _timer = 0;
 };
-
-#endif

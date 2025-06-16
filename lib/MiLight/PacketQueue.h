@@ -20,7 +20,7 @@ class PacketQueue {
 public:
   PacketQueue();
 
-  void push(const uint8_t* packet, const MiLightRemoteConfig* remoteConfig, const size_t repeatsOverride);
+  void push(const uint8_t* packet, const MiLightRemoteConfig* remoteConfig, size_t repeatsOverride);
   std::shared_ptr<QueuedPacket> pop();
   bool isEmpty() const;
   size_t size() const;

@@ -1,8 +1,7 @@
+#pragma once
+
 #include <WiFiUdp.h>
 #include <Settings.h>
-
-#ifndef MILIGHT_DISCOVERY_SERVER_H
-#define MILIGHT_DISCOVERY_SERVER_H
 
 class MiLightDiscoveryServer {
 public:
@@ -21,5 +20,3 @@ private:
   void handleDiscovery(uint8_t version);
   void sendResponse(char* buffer);
 };
-
-#endif

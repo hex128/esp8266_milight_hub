@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 #include <MiLightClient.h>
 #include <WiFiUdp.h>
@@ -11,9 +13,6 @@
 
 // Uncomment to enable Serial printing of packets
 // #define MILIGHT_UDP_DEBUG
-
-#ifndef _MILIGHT_UDP_SERVER
-#define _MILIGHT_UDP_SERVER
 
 class MiLightUdpServer {
 public:
@@ -38,5 +37,3 @@ protected:
   // Should return size of the response packet
   virtual void handlePacket(uint8_t* packet, size_t packetSize) = 0;
 };
-
-#endif

@@ -1,3 +1,4 @@
+#pragma once
 
 #ifdef ARDUINO
 #include "Arduino.h"
@@ -8,11 +9,9 @@
 
 #include <MiLightRadioConfig.h>
 
-#ifndef _MILIGHT_RADIO_H_
-#define _MILIGHT_RADIO_H_
-
 class MiLightRadio {
   public:
+    virtual ~MiLightRadio() = default;
 
     virtual int begin() = 0;
     virtual bool available() = 0;
@@ -23,8 +22,3 @@ class MiLightRadio {
     virtual const MiLightRadioConfig& config() = 0;
 
 };
-
-
-
-
-#endif

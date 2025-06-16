@@ -1,7 +1,6 @@
-#include <V6CommandHandler.h>
+#pragma once
 
-#ifndef _V6_RGB_CCT_COMMAND_HANDLER_H
-#define _V6_RGB_CCT_COMMAND_HANDLER_H
+#include <V6CommandHandler.h>
 
 enum V2CommandIds {
   V2_COLOR = 0x01,
@@ -41,5 +40,3 @@ public:
   void handleUpdateColor(MiLightClient* client, uint32_t color);
 
 };
-
-#endif

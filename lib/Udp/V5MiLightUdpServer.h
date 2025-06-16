@@ -1,3 +1,5 @@
+#pragma once
+
 // This protocol is documented here:
 // http://www.limitlessled.com/dev/
 
@@ -5,9 +7,6 @@
 #include <MiLightClient.h>
 #include <WiFiUdp.h>
 #include <MiLightUdpServer.h>
-
-#ifndef _V5_MILIGHT_UDP_SERVER
-#define _V5_MILIGHT_UDP_SERVER
 
 enum MiLightUdpCommands {
   UDP_CCT_ALL_ON             = 0x35,
@@ -66,5 +65,3 @@ protected:
   void handleCommand(uint8_t command, uint8_t commandArg);
   void pressButton(uint8_t button);
 };
-
-#endif

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <RF24.h>
 #include <PL1167_nRF24.h>
 #include <MiLightRadioConfig.h>
@@ -10,9 +12,6 @@
 #include <vector>
 #include <memory>
 
-#ifndef _MILIGHT_RADIO_FACTORY_H
-#define _MILIGHT_RADIO_FACTORY_H
-
 class MiLightRadioFactory {
 public:
 
@@ -23,7 +22,7 @@ public:
 
 };
 
-class NRF24Factory : public MiLightRadioFactory {
+class NRF24Factory final : public MiLightRadioFactory {
 public:
 
   NRF24Factory(
@@ -34,7 +33,7 @@ public:
     RF24Channel listenChannel
   );
 
-  virtual std::shared_ptr<MiLightRadio> create(const MiLightRadioConfig& config);
+  std::shared_ptr<MiLightRadio> create(const MiLightRadioConfig& config) override;
 
 protected:
 
@@ -44,12 +43,12 @@ protected:
 
 };
 
-class LT8900Factory : public MiLightRadioFactory {
+class LT8900Factory final : public MiLightRadioFactory {
 public:
 
   LT8900Factory(uint8_t csPin, uint8_t resetPin, uint8_t pktFlag);
 
-  virtual std::shared_ptr<MiLightRadio> create(const MiLightRadioConfig& config);
+  std::shared_ptr<MiLightRadio> create(const MiLightRadioConfig& config) override;
 
 protected:
 
@@ -58,5 +57,3 @@ protected:
   uint8_t _pktFlag;
 
 };
-
-#endif

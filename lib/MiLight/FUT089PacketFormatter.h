@@ -1,7 +1,6 @@
-#include <V2PacketFormatter.h>
+#pragma once
 
-#ifndef _FUT089_PACKET_FORMATTER_H
-#define _FUT089_PACKET_FORMATTER_H
+#include <V2PacketFormatter.h>
 
 #define FUT089_COLOR_OFFSET 0
 
@@ -21,25 +20,23 @@ enum MiLightFUT089Arguments {
   FUT089_WHITE_MODE = 0x14
 };
 
-class FUT089PacketFormatter : public V2PacketFormatter {
+class FUT089PacketFormatter final : public V2PacketFormatter {
 public:
   FUT089PacketFormatter()
-    : V2PacketFormatter(REMOTE_TYPE_FUT089, 0x25, 8)    // protocol is 0x25, and there are 8 groups
+    : V2PacketFormatter(REMOTE_TYPE_FUT089, 0x25, 8) // protocol is 0x25, and there are 8 groups
   { }
 
-  virtual void updateBrightness(uint8_t value);
-  virtual void updateHue(uint16_t value);
-  virtual void updateColorRaw(uint8_t value);
-  virtual void updateColorWhite();
-  virtual void updateTemperature(uint8_t value);
-  virtual void updateSaturation(uint8_t value);
-  virtual void enableNightMode();
+  void updateBrightness(uint8_t value) override;
+  void updateHue(uint16_t value) override;
+  void updateColorRaw(uint8_t value) override;
+  void updateColorWhite() override;
+  void updateTemperature(uint8_t value) override;
+  void updateSaturation(uint8_t value) override;
+  void enableNightMode() override;
 
-  virtual void modeSpeedDown();
-  virtual void modeSpeedUp();
-  virtual void updateMode(uint8_t mode);
+  void modeSpeedDown() override;
+  void modeSpeedUp() override;
+  void updateMode(uint8_t mode) override;
 
-  virtual BulbId parsePacket(const uint8_t* packet, JsonObject result);
+  BulbId parsePacket(const uint8_t* packet, JsonObject result) override;
 };
-
-#endif

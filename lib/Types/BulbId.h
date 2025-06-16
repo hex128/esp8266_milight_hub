@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include <MiLightRemoteType.h>
 #include <ArduinoJson.h>
 
@@ -11,12 +11,12 @@ struct BulbId {
 
   BulbId();
   BulbId(const BulbId& other);
-  BulbId(const uint16_t deviceId, const uint8_t groupId, const MiLightRemoteType deviceType);
-  bool operator==(const BulbId& other);
+  BulbId(uint16_t deviceId, uint8_t groupId, MiLightRemoteType deviceType);
+  bool operator==(const BulbId& other) const;
   void operator=(const BulbId& other);
 
-  uint32_t getCompactId() const;
-  String getHexDeviceId() const;
+  [[nodiscard]] uint32_t getCompactId() const;
+  [[nodiscard]] String getHexDeviceId() const;
   void serialize(JsonObject json) const;
   void serialize(JsonArray json) const;
   void load(Stream& stream);

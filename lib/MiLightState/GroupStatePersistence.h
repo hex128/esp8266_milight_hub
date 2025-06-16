@@ -1,7 +1,6 @@
-#include <GroupState.h>
+#pragma once
 
-#ifndef _GROUP_STATE_PERSISTENCE_H
-#define _GROUP_STATE_PERSISTENCE_H
+#include <GroupState.h>
 
 class GroupStatePersistence {
 public:
@@ -14,5 +13,3 @@ private:
 
   static char* buildFilename(const BulbId& id, char* buffer);
 };
-
-#endif

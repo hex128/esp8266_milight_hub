@@ -1,7 +1,6 @@
-#include <V6CommandHandler.h>
+#pragma once
 
-#ifndef _V6_CCT_COMMAND_HANDLER_H
-#define _V6_CCT_COMMAND_HANDLER_H
+#include <V6CommandHandler.h>
 
 enum CctCommandIds {
   V2_CCT_COMMAND_PREFIX   = 0x01,
@@ -34,5 +33,3 @@ public:
   );
 
 };
-
-#endif

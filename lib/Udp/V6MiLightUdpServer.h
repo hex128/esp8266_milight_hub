@@ -1,3 +1,5 @@
+#pragma once
+
 // This protocol is documented here:
 // http://www.limitlessled.com/dev/
 
@@ -10,15 +12,12 @@
 #define V6_COMMAND_LEN 8
 #define V6_MAX_SESSIONS 10
 
-#ifndef _V6_MILIGHT_UDP_SERVER
-#define _V6_MILIGHT_UDP_SERVER
-
 struct V6Session {
-  V6Session(IPAddress ipAddr, uint16_t port, uint16_t sessionId)
+  V6Session(const IPAddress &ipAddr, const uint16_t port, const uint16_t sessionId)
     : ipAddr(ipAddr),
       port(port),
       sessionId(sessionId),
-      next(NULL)
+      next(nullptr)
   { }
 
   IPAddress ipAddr;
@@ -27,16 +26,16 @@ struct V6Session {
   V6Session* next;
 };
 
-class V6MiLightUdpServer : public MiLightUdpServer {
+class V6MiLightUdpServer final : public MiLightUdpServer {
 public:
-  V6MiLightUdpServer(MiLightClient*& client, uint16_t port, uint16_t deviceId)
+  V6MiLightUdpServer(MiLightClient*& client, const uint16_t port, const uint16_t deviceId)
     : MiLightUdpServer(client, port, deviceId),
       sessionId(0),
       numSessions(0),
-      firstSession(NULL)
+      firstSession(nullptr)
   { }
 
-  ~V6MiLightUdpServer();
+  ~V6MiLightUdpServer() override;
 
   // Should return size of the response packet
   virtual void handlePacket(uint8_t* packet, size_t packetSize);
@@ -84,5 +83,3 @@ protected:
     uint8_t checksum
   );
 };
-
-#endif

@@ -1,8 +1,7 @@
+#pragma once
+
 #include <GroupState.h>
 #include <LinkedList.h>
-
-#ifndef _GROUP_STATE_CACHE_H
-#define _GROUP_STATE_CACHE_H
 
 struct GroupCacheNode {
   GroupCacheNode() {}
@@ -15,7 +14,7 @@ struct GroupCacheNode {
 
 class GroupStateCache {
 public:
-  GroupStateCache(const size_t maxSize);
+  GroupStateCache(size_t maxSize);
   ~GroupStateCache();
 
   GroupState* get(const BulbId& id);
@@ -30,5 +29,3 @@ private:
 
   GroupState* getInternal(const BulbId& id);
 };
-
-#endif

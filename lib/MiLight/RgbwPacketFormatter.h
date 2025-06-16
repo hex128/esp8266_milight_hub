@@ -1,7 +1,6 @@
-#include <PacketFormatter.h>
+#pragma once
 
-#ifndef _RGBW_PACKET_FORMATTER_H
-#define _RGBW_PACKET_FORMATTER_H
+#include <PacketFormatter.h>
 
 #define RGBW_PROTOCOL_ID_BYTE 0xB0
 
@@ -55,28 +54,26 @@ public:
     : PacketFormatter(REMOTE_TYPE_RGBW, 7)
   { }
 
-  virtual bool canHandle(const uint8_t* packet, const size_t len);
-  virtual void updateStatus(MiLightStatus status, uint8_t groupId);
-  virtual void updateBrightness(uint8_t value);
-  virtual void command(uint8_t command, uint8_t arg);
-  virtual void updateHue(uint16_t value);
-  virtual void updateColorRaw(uint8_t value);
-  virtual void updateColorWhite();
-  virtual void format(uint8_t const* packet, char* buffer);
-  virtual void unpair();
-  virtual void modeSpeedDown();
-  virtual void modeSpeedUp();
-  virtual void nextMode();
-  virtual void previousMode();
-  virtual void updateMode(uint8_t mode);
-  virtual void enableNightMode();
-  virtual BulbId parsePacket(const uint8_t* packet, JsonObject result);
+  bool canHandle(const uint8_t* packet, size_t len) override;
+  void updateStatus(MiLightStatus status, uint8_t groupId) override;
+  void updateBrightness(uint8_t value) override;
+  void command(uint8_t command, uint8_t arg) override;
+  void updateHue(uint16_t value) override;
+  void updateColorRaw(uint8_t value) override;
+  void updateColorWhite() override;
+  void format(uint8_t const* packet, char* buffer) override;
+  void unpair() override;
+  void modeSpeedDown() override;
+  void modeSpeedUp() override;
+  void nextMode() override;
+  void previousMode() override;
+  void updateMode(uint8_t mode) override;
+  void enableNightMode() override;
+  BulbId parsePacket(const uint8_t* packet, JsonObject result) override;
 
-  virtual void initializePacket(uint8_t* packet);
+  void initializePacket(uint8_t* packet) override;
 
 protected:
-  static bool isStatusCommand(const uint8_t command);
+  static bool isStatusCommand(uint8_t command);
   uint8_t currentMode();
 };
-
-#endif

@@ -1,7 +1,6 @@
-#include <V2PacketFormatter.h>
+#pragma once
 
-#ifndef _RGB_CCT_PACKET_FORMATTER_H
-#define _RGB_CCT_PACKET_FORMATTER_H
+#include <V2PacketFormatter.h>
 
 #define RGB_CCT_NUM_MODES 9
 
@@ -36,25 +35,23 @@ public:
       lastMode(0)
   { }
 
-  virtual void updateBrightness(uint8_t value);
-  virtual void updateHue(uint16_t value);
-  virtual void updateColorRaw(uint8_t value);
-  virtual void updateColorWhite();
-  virtual void updateTemperature(uint8_t value);
-  virtual void updateSaturation(uint8_t value);
-  virtual void enableNightMode();
+  void updateBrightness(uint8_t value) override;
+  void updateHue(uint16_t value) override;
+  void updateColorRaw(uint8_t value) override;
+  void updateColorWhite() override;
+  void updateTemperature(uint8_t value) override;
+  void updateSaturation(uint8_t value) override;
+  void enableNightMode() override;
 
-  virtual void modeSpeedDown();
-  virtual void modeSpeedUp();
-  virtual void updateMode(uint8_t mode);
-  virtual void nextMode();
-  virtual void previousMode();
+  void modeSpeedDown() override;
+  void modeSpeedUp() override;
+  void updateMode(uint8_t mode) override;
+  void nextMode() override;
+  void previousMode() override;
 
-  virtual BulbId parsePacket(const uint8_t* packet, JsonObject result);
+  BulbId parsePacket(const uint8_t* packet, JsonObject result) override;
 
 protected:
 
   uint8_t lastMode;
 };
-
-#endif

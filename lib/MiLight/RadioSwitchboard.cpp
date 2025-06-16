@@ -20,9 +20,9 @@ size_t RadioSwitchboard::getNumRadios() const {
   return radios.size();
 }
 
-std::shared_ptr<MiLightRadio> RadioSwitchboard::switchRadio(size_t radioIx) {
+std::shared_ptr<MiLightRadio> RadioSwitchboard::switchRadio(const size_t radioIx) {
   if (radioIx >= getNumRadios()) {
-    return NULL;
+    return nullptr;
   }
 
   if (this->currentRadio != radios[radioIx]) {
@@ -34,7 +34,7 @@ std::shared_ptr<MiLightRadio> RadioSwitchboard::switchRadio(size_t radioIx) {
 }
 
 std::shared_ptr<MiLightRadio> RadioSwitchboard::switchRadio(const MiLightRemoteConfig* remote) {
-  std::shared_ptr<MiLightRadio> radio = NULL;
+  std::shared_ptr<MiLightRadio> radio = nullptr;
 
   for (size_t i = 0; i < radios.size(); i++) {
     if (&this->radios[i]->config() == &remote->radioConfig) {
@@ -46,7 +46,7 @@ std::shared_ptr<MiLightRadio> RadioSwitchboard::switchRadio(const MiLightRemoteC
   return radio;
 }
 
-void RadioSwitchboard::write(uint8_t* packet, size_t len) {
+void RadioSwitchboard::write(uint8_t* packet, const size_t len) {
   if (this->currentRadio == nullptr) {
     return;
   }

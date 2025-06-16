@@ -11,21 +11,21 @@ void FUT089PacketFormatter::modeSpeedUp() {
   command(FUT089_ON, FUT089_MODE_SPEED_UP);
 }
 
-void FUT089PacketFormatter::updateMode(uint8_t mode) {
+void FUT089PacketFormatter::updateMode(const uint8_t mode) {
   command(FUT089_MODE, mode);
 }
 
-void FUT089PacketFormatter::updateBrightness(uint8_t brightness) {
+void FUT089PacketFormatter::updateBrightness(const uint8_t brightness) {
   command(FUT089_BRIGHTNESS, brightness);
 }
 
 // change the hue (which may also change to color mode).
-void FUT089PacketFormatter::updateHue(uint16_t value) {
-  uint8_t remapped = Units::rescale(value, 255, 360);
+void FUT089PacketFormatter::updateHue(const uint16_t value) {
+  const uint8_t remapped = Units::rescale(value, 255, 360);
   updateColorRaw(remapped);
 }
 
-void FUT089PacketFormatter::updateColorRaw(uint8_t value) {
+void FUT089PacketFormatter::updateColorRaw(const uint8_t value) {
   command(FUT089_COLOR, FUT089_COLOR_OFFSET + value);
 }
 
@@ -33,16 +33,16 @@ void FUT089PacketFormatter::updateColorRaw(uint8_t value) {
 // number (7), and they change which they do based on the mode of the lamp (white vs. color mode).
 // To make this command work, we need to switch to white mode, make the change, and then flip
 // back to the original mode.
-void FUT089PacketFormatter::updateTemperature(uint8_t value) {
+void FUT089PacketFormatter::updateTemperature(const uint8_t value) {
   // look up our current mode
   const GroupState* ourState = this->stateStore->get(this->deviceId, this->groupId, REMOTE_TYPE_FUT089);
-  BulbMode originalBulbMode;
+  BulbMode originalBulbMode = BULB_MODE_WHITE;
 
-  if (ourState != NULL) {
+  if (ourState != nullptr) {
     originalBulbMode = ourState->getBulbMode();
 
     // are we already in white?  If not, change to white
-    if (originalBulbMode != BulbMode::BULB_MODE_WHITE) {
+    if (originalBulbMode != BULB_MODE_WHITE) {
       updateColorWhite();
     }
   }
@@ -51,7 +51,7 @@ void FUT089PacketFormatter::updateTemperature(uint8_t value) {
   command(FUT089_KELVIN, 100 - value);
 
   // and return to our original mode
-  if (ourState != NULL && (settings->enableAutomaticModeSwitching) && (originalBulbMode != BulbMode::BULB_MODE_WHITE)) {
+  if (ourState != nullptr && (settings->enableAutomaticModeSwitching) && (originalBulbMode != BULB_MODE_WHITE)) {
     switchMode(*ourState, originalBulbMode);
   }
 }
@@ -60,17 +60,17 @@ void FUT089PacketFormatter::updateTemperature(uint8_t value) {
 // number (7), and they change which they do based on the mode of the lamp (white vs. color mode).
 // Therefore, if we are not in color mode, we need to switch to color mode, make the change,
 // and switch back to the original mode.
-void FUT089PacketFormatter::updateSaturation(uint8_t value) {
+void FUT089PacketFormatter::updateSaturation(const uint8_t value) {
   // look up our current mode
   const GroupState* ourState = this->stateStore->get(this->deviceId, this->groupId, REMOTE_TYPE_FUT089);
-  BulbMode originalBulbMode = BulbMode::BULB_MODE_WHITE;
+  BulbMode originalBulbMode = BULB_MODE_WHITE;
 
-  if (ourState != NULL) {
+  if (ourState != nullptr) {
     originalBulbMode = ourState->getBulbMode();
   }
 
   // are we already in color?  If not, we need to flip modes
-  if (ourState != NULL && (settings->enableAutomaticModeSwitching) && (originalBulbMode != BulbMode::BULB_MODE_COLOR)) {
+  if (ourState != nullptr && (settings->enableAutomaticModeSwitching) && (originalBulbMode != BULB_MODE_COLOR)) {
     updateHue(ourState->getHue());
   }
 
@@ -78,7 +78,7 @@ void FUT089PacketFormatter::updateSaturation(uint8_t value) {
   command(FUT089_SATURATION, 100 - value);
 
   // and revert back if necessary
-  if (ourState != NULL && (settings->enableAutomaticModeSwitching) && (originalBulbMode != BulbMode::BULB_MODE_COLOR)) {
+  if (ourState != nullptr && (settings->enableAutomaticModeSwitching) && (originalBulbMode != BULB_MODE_COLOR)) {
     switchMode(*ourState, originalBulbMode);
   }
 }
@@ -88,12 +88,12 @@ void FUT089PacketFormatter::updateColorWhite() {
 }
 
 void FUT089PacketFormatter::enableNightMode() {
-  uint8_t arg = groupCommandArg(OFF, groupId);
+  const uint8_t arg = groupCommandArg(OFF, groupId);
   command(FUT089_ON | 0x80, arg);
 }
 
-BulbId FUT089PacketFormatter::parsePacket(const uint8_t *packet, JsonObject result) {
-  if (stateStore == NULL) {
+BulbId FUT089PacketFormatter::parsePacket(const uint8_t *packet, const JsonObject result) {
+  if (stateStore == nullptr) {
     Serial.println(F("ERROR: stateStore not set.  Prepare was not called!  **THIS IS A BUG**"));
     BulbId fakeId(0, 0, REMOTE_TYPE_FUT089);
     return fakeId;
@@ -109,8 +109,8 @@ BulbId FUT089PacketFormatter::parsePacket(const uint8_t *packet, JsonObject resu
     REMOTE_TYPE_FUT089
   );
 
-  uint8_t command = (packetCopy[V2_COMMAND_INDEX] & 0x7F);
-  uint8_t arg = packetCopy[V2_ARGUMENT_INDEX];
+  const uint8_t command = (packetCopy[V2_COMMAND_INDEX] & 0x7F);
+  const uint8_t arg = packetCopy[V2_ARGUMENT_INDEX];
 
   if (command == FUT089_ON) {
     if ((packetCopy[V2_COMMAND_INDEX] & 0x80) == 0x80) {
@@ -129,18 +129,18 @@ BulbId FUT089PacketFormatter::parsePacket(const uint8_t *packet, JsonObject resu
       bulbId.groupId = arg-9;
     }
   } else if (command == FUT089_COLOR) {
-    uint8_t rescaledColor = (arg - FUT089_COLOR_OFFSET) % 0x100;
-    uint16_t hue = Units::rescale<uint16_t, uint16_t>(rescaledColor, 360, 255.0);
+    const uint8_t rescaledColor = (arg - FUT089_COLOR_OFFSET) % 0x100;
+    const uint16_t hue = Units::rescale<uint16_t, uint16_t>(rescaledColor, 360, 255.0);
     result[GroupStateFieldNames::HUE] = hue;
   } else if (command == FUT089_BRIGHTNESS) {
-    uint8_t level = constrain(arg, 0, 100);
+    const uint8_t level = constrain(arg, 0, 100);
     result[GroupStateFieldNames::BRIGHTNESS] = Units::rescale<uint8_t, uint8_t>(level, 255, 100);
   // saturation == kelvin. arg ranges are the same, so can't distinguish
   // without using state
   } else if (command == FUT089_SATURATION) {
     const GroupState* state = stateStore->get(bulbId);
 
-    if (state != NULL && state->getBulbMode() == BULB_MODE_COLOR) {
+    if (state != nullptr && state->getBulbMode() == BULB_MODE_COLOR) {
       result[GroupStateFieldNames::SATURATION] = 100 - constrain(arg, 0, 100);
     } else {
       result[GroupStateFieldNames::COLOR_TEMP] = Units::whiteValToMireds(100 - arg, 100);

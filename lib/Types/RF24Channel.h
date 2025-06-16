@@ -1,8 +1,7 @@
+#pragma once
+
 #include <Arduino.h>
 #include <vector>
-
-#ifndef _RF24_CHANNELS_H
-#define _RF24_CHANNELS_H
 
 enum class RF24Channel {
   RF24_LOW = 0,
@@ -17,5 +16,3 @@ public:
   static RF24Channel defaultValue();
   static std::vector<RF24Channel> allValues();
 };
-
-#endif

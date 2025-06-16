@@ -1,4 +1,6 @@
-#include <stddef.h>
+#pragma once
+
+#include <cstddef>
 #include <inttypes.h>
 #include <MiLightRemoteType.h>
 #include <MiLightStatus.h>
@@ -8,9 +10,6 @@
 #include <BulbId.h>
 #include <ParsedColor.h>
 #include <vector>
-
-#ifndef _GROUP_STATE_H
-#define _GROUP_STATE_H
 
 // enable to add debugging on state
 // #define DEBUG_STATE
@@ -58,7 +57,7 @@ public:
   // 1 bit
   bool isSetState() const;
   MiLightStatus getState() const;
-  bool setState(const MiLightStatus on);
+  bool setState(MiLightStatus on);
   // Return true if status is ON or if the field is unset (i.e., defaults to ON)
   bool isOn() const;
 
@@ -222,5 +221,3 @@ private:
 };
 
 extern const BulbId DEFAULT_BULB_ID;
-
-#endif

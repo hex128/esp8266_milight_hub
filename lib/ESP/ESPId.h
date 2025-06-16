@@ -1,8 +1,5 @@
-#ifndef _ESPID_H
-#define _ESPID_H
+#pragma once
 
 #include <Esp.h>
 
 uint32_t getESPId();
-
-#endif

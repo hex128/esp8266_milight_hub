@@ -1,11 +1,11 @@
+#pragma once
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <GroupStateField.h>
 #include <RF24PowerLevel.h>
 #include <RF24Channel.h>
-#include <Size.h>
 #include <LEDStatus.h>
-#include <AuthProviders.h>
 #include <GroupAlias.h>
 
 #include <MiLightRemoteType.h>
@@ -14,9 +14,6 @@
 #include <vector>
 #include <memory>
 #include <map>
-
-#ifndef _SETTINGS_H_INCLUDED
-#define _SETTINGS_H_INCLUDED
 
 #ifndef MILIGHT_HUB_SETTINGS_BUFFER_SIZE
 #define MILIGHT_HUB_SETTINGS_BUFFER_SIZE 4096
@@ -75,7 +72,7 @@ enum class WifiMode {
   B, G, N
 };
 
-static const std::vector<GroupStateField> DEFAULT_GROUP_STATE_FIELDS({
+static const std::vector DEFAULT_GROUP_STATE_FIELDS({
   GroupStateField::STATE,
   GroupStateField::BRIGHTNESS,
   GroupStateField::COMPUTED_COLOR,
@@ -94,54 +91,54 @@ struct GatewayConfig {
 
 // all keys that appear in JSON
 namespace SettingsKeys {
-  static const char ADMIN_USERNAME[] PROGMEM = "admin_username";
-  static const char ADMIN_PASSWORD[] PROGMEM = "admin_password";
-  static const char CE_PIN[] PROGMEM = "ce_pin";
-  static const char CSN_PIN[] PROGMEM = "csn_pin";
-  static const char RESET_PIN[] PROGMEM = "reset_pin";
-  static const char LED_PIN[] PROGMEM = "led_pin";
-  static const char PACKET_REPEATS[] PROGMEM = "packet_repeats";
-  static const char HTTP_REPEAT_FACTOR[] PROGMEM = "http_repeat_factor";
-  static const char AUTO_RESTART_PERIOD[] PROGMEM = "auto_restart_period";
-  static const char MQTT_SERVER[] PROGMEM = "mqtt_server";
-  static const char MQTT_USERNAME[] PROGMEM = "mqtt_username";
-  static const char MQTT_PASSWORD[] PROGMEM = "mqtt_password";
-  static const char MQTT_TOPIC_PATTERN[] PROGMEM = "mqtt_topic_pattern";
-  static const char MQTT_UPDATE_TOPIC_PATTERN[] PROGMEM = "mqtt_update_topic_pattern";
-  static const char MQTT_STATE_TOPIC_PATTERN[] PROGMEM = "mqtt_state_topic_pattern";
-  static const char MQTT_CLIENT_STATUS_TOPIC[] PROGMEM = "mqtt_client_status_topic";
-  static const char SIMPLE_MQTT_CLIENT_STATUS[] PROGMEM = "simple_mqtt_client_status";
-  static const char DISCOVERY_PORT[] PROGMEM = "discovery_port";
-  static const char LISTEN_REPEATS[] PROGMEM = "listen_repeats";
-  static const char STATE_FLUSH_INTERVAL[] PROGMEM = "state_flush_interval";
-  static const char MQTT_STATE_RATE_LIMIT[] PROGMEM = "mqtt_state_rate_limit";
-  static const char MQTT_DEBOUNCE_DELAY[] PROGMEM = "mqtt_debounce_delay";
-  static const char MQTT_RETAIN[] PROGMEM = "mqtt_retain";
-  static const char PACKET_REPEAT_THROTTLE_THRESHOLD[] PROGMEM = "packet_repeat_throttle_threshold";
-  static const char PACKET_REPEAT_THROTTLE_SENSITIVITY[] PROGMEM = "packet_repeat_throttle_sensitivity";
-  static const char PACKET_REPEAT_MINIMUM[] PROGMEM = "packet_repeat_minimum";
-  static const char ENABLE_AUTOMATIC_MODE_SWITCHING[] PROGMEM = "enable_automatic_mode_switching";
-  static const char LED_MODE_PACKET_COUNT[] PROGMEM = "led_mode_packet_count";
-  static const char HOSTNAME[] PROGMEM = "hostname";
-  static const char WIFI_STATIC_IP[] PROGMEM = "wifi_static_ip";
-  static const char WIFI_STATIC_IP_GATEWAY[] PROGMEM = "wifi_static_ip_gateway";
-  static const char WIFI_STATIC_IP_NETMASK[] PROGMEM = "wifi_static_ip_netmask";
-  static const char PACKET_REPEATS_PER_LOOP[] PROGMEM = "packet_repeats_per_loop";
-  static const char HOME_ASSISTANT_DISCOVERY_PREFIX[] PROGMEM = "home_assistant_discovery_prefix";
-  static const char DEFAULT_TRANSITION_PERIOD[] PROGMEM = "default_transition_period";
-  static const char WIFI_MODE[] PROGMEM = "wifi_mode";
-  static const char RF24_CHANNELS[] PROGMEM = "rf24_channels";
-  static const char RF24_LISTEN_CHANNEL[] PROGMEM = "rf24_listen_channel";
-  static const char RF24_POWER_LEVEL[] PROGMEM = "rf24_power_level";
-  static const char LED_MODE_WIFI_CONFIG[] PROGMEM = "led_mode_wifi_config";
-  static const char LED_MODE_WIFI_FAILED[] PROGMEM = "led_mode_wifi_failed";
-  static const char LED_MODE_OPERATING[] PROGMEM = "led_mode_operating";
-  static const char LED_MODE_PACKET[] PROGMEM = "led_mode_packet";
-  static const char RADIO_INTERFACE_TYPE[] PROGMEM = "radio_interface_type";
-  static const char DEVICE_IDS[] PROGMEM = "device_ids";
-  static const char GATEWAY_CONFIGS[] PROGMEM = "gateway_configs";
-  static const char GROUP_STATE_FIELDS[] PROGMEM = "group_state_fields";
-  static const char GROUP_ID_ALIASES[] PROGMEM = "group_id_aliases";
+  static constexpr char ADMIN_USERNAME[] PROGMEM = "admin_username";
+  static constexpr char ADMIN_PASSWORD[] PROGMEM = "admin_password";
+  static constexpr char CE_PIN[] PROGMEM = "ce_pin";
+  static constexpr char CSN_PIN[] PROGMEM = "csn_pin";
+  static constexpr char RESET_PIN[] PROGMEM = "reset_pin";
+  static constexpr char LED_PIN[] PROGMEM = "led_pin";
+  static constexpr char PACKET_REPEATS[] PROGMEM = "packet_repeats";
+  static constexpr char HTTP_REPEAT_FACTOR[] PROGMEM = "http_repeat_factor";
+  static constexpr char AUTO_RESTART_PERIOD[] PROGMEM = "auto_restart_period";
+  static constexpr char MQTT_SERVER[] PROGMEM = "mqtt_server";
+  static constexpr char MQTT_USERNAME[] PROGMEM = "mqtt_username";
+  static constexpr char MQTT_PASSWORD[] PROGMEM = "mqtt_password";
+  static constexpr char MQTT_TOPIC_PATTERN[] PROGMEM = "mqtt_topic_pattern";
+  static constexpr char MQTT_UPDATE_TOPIC_PATTERN[] PROGMEM = "mqtt_update_topic_pattern";
+  static constexpr char MQTT_STATE_TOPIC_PATTERN[] PROGMEM = "mqtt_state_topic_pattern";
+  static constexpr char MQTT_CLIENT_STATUS_TOPIC[] PROGMEM = "mqtt_client_status_topic";
+  static constexpr char SIMPLE_MQTT_CLIENT_STATUS[] PROGMEM = "simple_mqtt_client_status";
+  static constexpr char DISCOVERY_PORT[] PROGMEM = "discovery_port";
+  static constexpr char LISTEN_REPEATS[] PROGMEM = "listen_repeats";
+  static constexpr char STATE_FLUSH_INTERVAL[] PROGMEM = "state_flush_interval";
+  static constexpr char MQTT_STATE_RATE_LIMIT[] PROGMEM = "mqtt_state_rate_limit";
+  static constexpr char MQTT_DEBOUNCE_DELAY[] PROGMEM = "mqtt_debounce_delay";
+  static constexpr char MQTT_RETAIN[] PROGMEM = "mqtt_retain";
+  static constexpr char PACKET_REPEAT_THROTTLE_THRESHOLD[] PROGMEM = "packet_repeat_throttle_threshold";
+  static constexpr char PACKET_REPEAT_THROTTLE_SENSITIVITY[] PROGMEM = "packet_repeat_throttle_sensitivity";
+  static constexpr char PACKET_REPEAT_MINIMUM[] PROGMEM = "packet_repeat_minimum";
+  static constexpr char ENABLE_AUTOMATIC_MODE_SWITCHING[] PROGMEM = "enable_automatic_mode_switching";
+  static constexpr char LED_MODE_PACKET_COUNT[] PROGMEM = "led_mode_packet_count";
+  static constexpr char HOSTNAME[] PROGMEM = "hostname";
+  static constexpr char WIFI_STATIC_IP[] PROGMEM = "wifi_static_ip";
+  static constexpr char WIFI_STATIC_IP_GATEWAY[] PROGMEM = "wifi_static_ip_gateway";
+  static constexpr char WIFI_STATIC_IP_NETMASK[] PROGMEM = "wifi_static_ip_netmask";
+  static constexpr char PACKET_REPEATS_PER_LOOP[] PROGMEM = "packet_repeats_per_loop";
+  static constexpr char HOME_ASSISTANT_DISCOVERY_PREFIX[] PROGMEM = "home_assistant_discovery_prefix";
+  static constexpr char DEFAULT_TRANSITION_PERIOD[] PROGMEM = "default_transition_period";
+  static constexpr char WIFI_MODE[] PROGMEM = "wifi_mode";
+  static constexpr char RF24_CHANNELS[] PROGMEM = "rf24_channels";
+  static constexpr char RF24_LISTEN_CHANNEL[] PROGMEM = "rf24_listen_channel";
+  static constexpr char RF24_POWER_LEVEL[] PROGMEM = "rf24_power_level";
+  static constexpr char LED_MODE_WIFI_CONFIG[] PROGMEM = "led_mode_wifi_config";
+  static constexpr char LED_MODE_WIFI_FAILED[] PROGMEM = "led_mode_wifi_failed";
+  static constexpr char LED_MODE_OPERATING[] PROGMEM = "led_mode_operating";
+  static constexpr char LED_MODE_PACKET[] PROGMEM = "led_mode_packet";
+  static constexpr char RADIO_INTERFACE_TYPE[] PROGMEM = "radio_interface_type";
+  static constexpr char DEVICE_IDS[] PROGMEM = "device_ids";
+  static constexpr char GATEWAY_CONFIGS[] PROGMEM = "gateway_configs";
+  static constexpr char GROUP_STATE_FIELDS[] PROGMEM = "group_state_fields";
+  static constexpr char GROUP_ID_ALIASES[] PROGMEM = "group_id_aliases";
 }
 
 class Settings {
@@ -196,8 +193,8 @@ public:
   const String& getUsername() const;
   const String& getPassword() const;
 
-  bool isAutoRestartEnabled();
-  size_t getAutoRestartPeriod();
+  bool isAutoRestartEnabled() const;
+  size_t getAutoRestartPeriod() const;
 
   static bool load(Settings& settings);
   static bool loadAliases(Settings& settings);
@@ -206,13 +203,13 @@ public:
   static String typeToString(RadioInterfaceType type);
   static std::vector<RF24Channel> defaultListenChannels();
 
-  void save();
-  void serialize(Print& stream, const bool prettyPrint = false) const;
+  void save() const;
+  void serialize(Print& stream, bool prettyPrint = false) const;
   void updateDeviceIds(JsonArray arr);
   void updateGatewayConfigs(JsonArray arr);
   void patch(JsonObject obj);
   String mqttServer();
-  uint16_t mqttPort();
+  uint16_t mqttPort() const;
   std::map<String, GroupAlias>::const_iterator findAlias(MiLightRemoteType deviceType, uint16_t deviceId, uint8_t groupId);
   std::map<String, GroupAlias>::const_iterator findAliasById(size_t id);
   void addAlias(const char* alias, const BulbId& bulbId);
@@ -275,7 +272,7 @@ protected:
   size_t _autoRestartPeriod;
 
   void parseGroupIdAliases(JsonObject json);
-  void dumpGroupIdAliases(JsonObject json);
+  void dumpGroupIdAliases(JsonObject json) const;
 
   template <typename T>
   void setIfPresent(JsonObject obj, const __FlashStringHelper* key, T& var) {
@@ -317,5 +314,3 @@ protected:
     }
   }
 };
-
-#endif

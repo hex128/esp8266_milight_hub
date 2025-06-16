@@ -17,7 +17,7 @@ uint8_t const V2RFEncoding::V2_OFFSETS[][4] = {
   { 0x61, 0x13, 0x38, 0x64 }  // checksum
 };
 
-uint8_t V2RFEncoding::xorKey(uint8_t key) {
+uint8_t V2RFEncoding::xorKey(const uint8_t key) {
   // Generate most significant nibble
   const uint8_t shift = (key & 0x0F) < 0x04 ? 0 : 1;
   const uint8_t x = (((key & 0xF0) >> 4) + shift + 6) % 8;
@@ -29,7 +29,7 @@ uint8_t V2RFEncoding::xorKey(uint8_t key) {
   return ( msn | lsn );
 }
 
-uint8_t V2RFEncoding::decodeByte(uint8_t byte, uint8_t s1, uint8_t xorKey, uint8_t s2) {
+uint8_t V2RFEncoding::decodeByte(const uint8_t byte, const uint8_t s1, const uint8_t xorKey, const uint8_t s2) {
   uint8_t value = byte - s2;
   value = value ^ xorKey;
   value = value - s1;
@@ -37,7 +37,7 @@ uint8_t V2RFEncoding::decodeByte(uint8_t byte, uint8_t s1, uint8_t xorKey, uint8
   return value;
 }
 
-uint8_t V2RFEncoding::encodeByte(uint8_t byte, uint8_t s1, uint8_t xorKey, uint8_t s2) {
+uint8_t V2RFEncoding::encodeByte(const uint8_t byte, const uint8_t s1, const uint8_t xorKey, const uint8_t s2) {
   uint8_t value = byte + s1;
   value = value ^ xorKey;
   value = value + s2;
@@ -46,7 +46,7 @@ uint8_t V2RFEncoding::encodeByte(uint8_t byte, uint8_t s1, uint8_t xorKey, uint8
 }
 
 void V2RFEncoding::decodeV2Packet(uint8_t *packet) {
-  uint8_t key = xorKey(packet[0]);
+  const uint8_t key = xorKey(packet[0]);
 
   for (size_t i = 1; i <= 8; i++) {
     packet[i] = decodeByte(packet[i], 0, key, V2_OFFSET(i, packet[0], V2_OFFSET_JUMP_START));
@@ -54,7 +54,7 @@ void V2RFEncoding::decodeV2Packet(uint8_t *packet) {
 }
 
 void V2RFEncoding::encodeV2Packet(uint8_t *packet) {
-  uint8_t key = xorKey(packet[0]);
+  const uint8_t key = xorKey(packet[0]);
   uint8_t sum = key;
 
   for (size_t i = 1; i <= 7; i++) {

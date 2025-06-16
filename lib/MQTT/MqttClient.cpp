@@ -1,4 +1,5 @@
-#include <stddef.h>
+#include <cstddef>
+#include <utility>
 #include <MqttClient.h>
 #include <TokenIterator.h>
 #include <UrlTokenBindings.h>
@@ -8,10 +9,9 @@
 #include <MiLightRadioConfig.h>
 #include <AboutHelper.h>
 
-
-static const char* STATUS_CONNECTED = "connected";
-static const char* STATUS_DISCONNECTED = "disconnected_clean";
-static const char* STATUS_LWT_DISCONNECTED = "disconnected_unclean";
+static auto STATUS_CONNECTED = "connected";
+static auto STATUS_DISCONNECTED = "disconnected_clean";
+static auto STATUS_LWT_DISCONNECTED = "disconnected_unclean";
 
 MqttClient::MqttClient(Settings& settings, MiLightClient*& milightClient)
   : mqttClient(tcpClient),
@@ -20,19 +20,19 @@ MqttClient::MqttClient(Settings& settings, MiLightClient*& milightClient)
     lastConnectAttempt(0),
     connected(false)
 {
-  String strDomain = settings.mqttServer();
+  const String strDomain = settings.mqttServer();
   this->domain = new char[strDomain.length() + 1];
   strcpy(this->domain, strDomain.c_str());
 }
 
 MqttClient::~MqttClient() {
-  String aboutStr = generateConnectionStatusMessage(STATUS_DISCONNECTED);
+  const String aboutStr = generateConnectionStatusMessage(STATUS_DISCONNECTED);
   mqttClient.publish(settings.mqttClientStatusTopic.c_str(), aboutStr.c_str(), true);
   mqttClient.disconnect();
   delete this->domain;
 }
 
-void MqttClient::onConnect(OnConnectFn fn) {
+void MqttClient::onConnect(const OnConnectFn &fn) {
   this->onConnectFn = fn;
 }
 
@@ -48,7 +48,7 @@ void MqttClient::begin() {
 
   mqttClient.setServer(this->domain, settings.mqttPort());
   mqttClient.setCallback(
-    [this](char* topic, byte* payload, int length) {
+    [this](char* topic, const byte* payload, const int length) {
       this->publishCallback(topic, payload, length);
     }
   );
@@ -74,13 +74,15 @@ bool MqttClient::connect() {
       true,
       generateConnectionStatusMessage(STATUS_LWT_DISCONNECTED).c_str()
     );
-  } else if (settings.mqttUsername.length() > 0) {
+  }
+  if (settings.mqttUsername.length() > 0) {
     return mqttClient.connect(
       nameBuffer,
       settings.mqttUsername.c_str(),
       settings.mqttPassword.c_str()
     );
-  } else if (settings.mqttClientStatusTopic.length() > 0) {
+  }
+  if (settings.mqttClientStatusTopic.length() > 0) {
     return mqttClient.connect(
       nameBuffer,
       settings.mqttClientStatusTopic.c_str(),
@@ -88,14 +90,13 @@ bool MqttClient::connect() {
       true,
       generateConnectionStatusMessage(STATUS_LWT_DISCONNECTED).c_str()
     );
-  } else {
-    return mqttClient.connect(nameBuffer);
   }
+  return mqttClient.connect(nameBuffer);
 }
 
 void MqttClient::sendBirthMessage() {
   if (settings.mqttClientStatusTopic.length() > 0) {
-    String aboutStr = generateConnectionStatusMessage(STATUS_CONNECTED);
+    const String aboutStr = generateConnectionStatusMessage(STATUS_CONNECTED);
     mqttClient.publish(settings.mqttClientStatusTopic.c_str(), aboutStr.c_str(), true);
   }
 }
@@ -134,11 +135,11 @@ void MqttClient::handleClient() {
   }
 }
 
-void MqttClient::sendUpdate(const MiLightRemoteConfig& remoteConfig, uint16_t deviceId, uint16_t groupId, const char* update) {
+void MqttClient::sendUpdate(const MiLightRemoteConfig& remoteConfig, const uint16_t deviceId, const uint16_t groupId, const char* update) {
   publish(settings.mqttUpdateTopicPattern, remoteConfig, deviceId, groupId, update, false);
 }
 
-void MqttClient::sendState(const MiLightRemoteConfig& remoteConfig, uint16_t deviceId, uint16_t groupId, const char* update) {
+void MqttClient::sendState(const MiLightRemoteConfig& remoteConfig, const uint16_t deviceId, const uint16_t groupId, const char* update) {
   publish(settings.mqttStateTopicPattern, remoteConfig, deviceId, groupId, update, true);
 }
 
@@ -161,12 +162,12 @@ void MqttClient::subscribe() {
 
 void MqttClient::send(const char* topic, const char* message, const bool retain) {
   size_t len = strlen(message);
-  size_t topicLen = strlen(topic);
+  const size_t topicLen = strlen(topic);
 
   if ((topicLen + len + 10) < MQTT_MAX_PACKET_SIZE ) {
     mqttClient.publish(topic, message, retain);
   } else {
-    const uint8_t* messageBuffer = reinterpret_cast<const uint8_t*>(message);
+    const auto messageBuffer = reinterpret_cast<const uint8_t*>(message);
     mqttClient.beginPublish(topic, len, retain);
 
 #ifdef MQTT_DEBUG
@@ -186,29 +187,29 @@ void MqttClient::send(const char* topic, const char* message, const bool retain)
 }
 
 void MqttClient::publish(
-  const String& _topic,
+  const String& topic,
   const MiLightRemoteConfig &remoteConfig,
-  uint16_t deviceId,
-  uint16_t groupId,
+  const uint16_t deviceId,
+  const uint16_t groupId,
   const char* message,
-  const bool _retain
+  const bool retain
 ) {
-  if (_topic.length() == 0) {
+  if (topic.length() == 0) {
     return;
   }
 
-  BulbId bulbId(deviceId, groupId, remoteConfig.type);
-  String topic = bindTopicString(_topic, bulbId);
-  const bool retain = _retain && this->settings.mqttRetain;
+  const BulbId bulbId(deviceId, groupId, remoteConfig.type);
+  const String topic_ = bindTopicString(topic, bulbId);
+  const bool retain_ = retain && this->settings.mqttRetain;
 
 #ifdef MQTT_DEBUG
   printf("MqttClient - publishing update to %s\n", topic.c_str());
 #endif
 
-  send(topic.c_str(), message, retain);
+  send(topic_.c_str(), message, retain_);
 }
 
-void MqttClient::publishCallback(char* topic, byte* payload, int length) {
+void MqttClient::publishCallback(char* topic, const byte* payload, const int length) const {
   uint16_t deviceId = 0;
   uint8_t groupId = 0;
   const MiLightRemoteConfig* config = &FUT092Config;
@@ -220,24 +221,23 @@ void MqttClient::publishCallback(char* topic, byte* payload, int length) {
   printf("MqttClient - Got message on topic: %s\n%s\n", topic, cstrPayload);
 #endif
 
-  auto patternIterator = std::make_shared<TokenIterator>(settings.mqttTopicPattern.c_str(), settings.mqttTopicPattern.length(), '/');
-  auto topicIterator = std::make_shared<TokenIterator>(topic, strlen(topic), '/');
-  UrlTokenBindings tokenBindings(patternIterator, topicIterator);
+  const auto patternIterator = std::make_shared<TokenIterator>(settings.mqttTopicPattern.c_str(), settings.mqttTopicPattern.length(), '/');
+  const auto topicIterator = std::make_shared<TokenIterator>(topic, strlen(topic), '/');
+  const UrlTokenBindings tokenBindings(patternIterator, topicIterator);
 
   if (tokenBindings.hasBinding("device_alias")) {
-    String alias = tokenBindings.get("device_alias");
-    auto itr = settings.groupIdAliases.find(alias);
+    const String alias = tokenBindings.get("device_alias");
+    const auto itr = settings.groupIdAliases.find(alias);
 
     if (itr == settings.groupIdAliases.end()) {
       Serial.printf_P(PSTR("MqttClient - WARNING: could not find device alias: `%s'. Ignoring packet.\n"), alias.c_str());
       return;
-    } else {
-      BulbId bulbId = itr->second.bulbId;
-
-      deviceId = bulbId.deviceId;
-      config = MiLightRemoteConfig::fromType(bulbId.deviceType);
-      groupId = bulbId.groupId;
     }
+    const BulbId bulbId = itr->second.bulbId;
+
+    deviceId = bulbId.deviceId;
+    config = MiLightRemoteConfig::fromType(bulbId.deviceType);
+    groupId = bulbId.groupId;
   } else {
     if (tokenBindings.hasBinding(GroupStateFieldNames::DEVICE_ID)) {
       deviceId = parseInt<uint16_t>(tokenBindings.get(GroupStateFieldNames::DEVICE_ID));
@@ -258,14 +258,14 @@ void MqttClient::publishCallback(char* topic, byte* payload, int length) {
     }
   }
 
-  if (config == NULL) {
+  if (config == nullptr) {
     Serial.println(F("MqttClient - ERROR: unknown device_type specified"));
     return;
   }
 
   StaticJsonDocument<400> buffer;
   deserializeJson(buffer, cstrPayload);
-  JsonObject obj = buffer.as<JsonObject>();
+  const auto obj = buffer.as<JsonObject>();
 
 #ifdef MQTT_DEBUG
   printf("MqttClient - device %04X, group %u\n", deviceId, groupId);
@@ -275,9 +275,9 @@ void MqttClient::publishCallback(char* topic, byte* payload, int length) {
   milightClient->update(obj);
 }
 
-String MqttClient::bindTopicString(const String& topicPattern, const BulbId& bulbId) {
+String MqttClient::bindTopicString(const String& topicPattern, const BulbId& bulbId) const {
   String boundTopic = topicPattern;
-  String deviceIdHex = bulbId.getHexDeviceId();
+  const String deviceIdHex = bulbId.getHexDeviceId();
 
   boundTopic.replace(":device_id", deviceIdHex);
   boundTopic.replace(":hex_device_id", deviceIdHex);
@@ -285,7 +285,7 @@ String MqttClient::bindTopicString(const String& topicPattern, const BulbId& bul
   boundTopic.replace(":group_id", String(bulbId.groupId));
   boundTopic.replace(":device_type", MiLightRemoteTypeHelpers::remoteTypeToString(bulbId.deviceType));
 
-  auto it = settings.findAlias(bulbId.deviceType, bulbId.deviceId, bulbId.groupId);
+  const auto it = settings.findAlias(bulbId.deviceType, bulbId.deviceId, bulbId.groupId);
   if (it != settings.groupIdAliases.end()) {
     boundTopic.replace(":device_alias", it->first);
   } else {
@@ -295,26 +295,24 @@ String MqttClient::bindTopicString(const String& topicPattern, const BulbId& bul
   return boundTopic;
 }
 
-String MqttClient::generateConnectionStatusMessage(const char* connectionStatus) {
+String MqttClient::generateConnectionStatusMessage(const char* status) const {
   if (settings.simpleMqttClientStatus) {
     // Don't expand disconnect type for simple status
-    if (0 == strcmp(connectionStatus, STATUS_CONNECTED)) {
-      return connectionStatus;
-    } else {
-      return "disconnected";
+    if (0 == strcmp(status, STATUS_CONNECTED)) {
+      return status;
     }
-  } else {
-    StaticJsonDocument<1024> json;
-    json[GroupStateFieldNames::STATUS] = connectionStatus;
-
-    // Fill other fields
-    AboutHelper::generateAboutObject(json, true);
-
-    String response;
-    serializeJson(json, response);
-
-    return response;
+    return "disconnected";
   }
+  StaticJsonDocument<1024> json;
+  json[GroupStateFieldNames::STATUS] = status;
+
+  // Fill other fields
+  AboutHelper::generateAboutObject(json, true);
+
+  String response;
+  serializeJson(json, response);
+
+  return response;
 }
 
 bool MqttClient::isConnected() {

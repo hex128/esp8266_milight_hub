@@ -1,6 +1,6 @@
-#include <Transition.h>
-
 #pragma once
+
+#include <Transition.h>
 
 class ChangeFieldOnFinishTransition : public Transition {
 public:

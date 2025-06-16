@@ -1,24 +1,24 @@
+#pragma once
+
 #include <Transition.h>
 #include <ParsedColor.h>
 
-#pragma once
-
-class ColorTransition : public Transition {
+class ColorTransition final : public Transition {
 public:
   struct RgbColor {
     RgbColor();
     RgbColor(const ParsedColor& color);
     RgbColor(int16_t r, int16_t g, int16_t b);
-    bool operator==(const RgbColor& other);
+    bool operator==(const RgbColor& other) const;
 
     int16_t r, g, b;
   };
 
-  class Builder : public Transition::Builder {
+  class Builder final : public Transition::Builder {
   public:
-    Builder(size_t id, uint16_t defaultPeriod, const BulbId& bulbId, TransitionFn callback, const ParsedColor& start, const ParsedColor& end);
+    Builder(size_t id, uint16_t defaultPeriod, const BulbId& bulbId, const TransitionFn &callback, const ParsedColor& start, const ParsedColor& end);
 
-    virtual std::shared_ptr<Transition> _build() const override;
+    std::shared_ptr<Transition> _build() const override;
 
   private:
     RgbColor start;
@@ -39,7 +39,7 @@ public:
   static size_t calculateColorPeriod(ColorTransition* t, const RgbColor& start, const RgbColor& end, size_t stepSize, size_t duration);
   inline static size_t calculateMaxDistance(const RgbColor& start, const RgbColor& end);
   inline static int16_t calculateStepSizePart(int16_t distance, size_t duration, size_t period);
-  virtual bool isFinished() override;
+  bool isFinished() override;
 
 protected:
   const RgbColor endColor;
@@ -51,7 +51,7 @@ protected:
   uint16_t lastSaturation;
   bool sentFinalColor;
 
-  virtual void step() override;
-  virtual void childSerialize(JsonObject& json) override;
+  void step() override;
+  void childSerialize(JsonObject& json) override;
   static inline void stepPart(uint16_t& current, uint16_t end, int16_t step);
 };

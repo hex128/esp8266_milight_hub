@@ -1,20 +1,17 @@
-#include <GroupStateField.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <Arduino.h>
-#include <functional>
-#include <Transition.h>
-
 #pragma once
 
-class FieldTransition : public Transition {
+#include <GroupStateField.h>
+#include <Arduino.h>
+#include <Transition.h>
+
+class FieldTransition final : public Transition {
 public:
 
-  class Builder : public Transition::Builder {
+  class Builder final : public Transition::Builder {
   public:
     Builder(size_t id, uint16_t defaultPeriod, const BulbId& bulbId, TransitionFn callback, GroupStateField field, uint16_t start, uint16_t end);
 
-    virtual std::shared_ptr<Transition> _build() const override;
+    std::shared_ptr<Transition> _build() const override;
 
   private:
     size_t stepSize;
@@ -34,7 +31,7 @@ public:
     TransitionFn callback
   );
 
-  virtual bool isFinished() override;
+  bool isFinished() override;
 
 private:
   const GroupStateField field;
@@ -43,6 +40,6 @@ private:
   const int16_t stepSize;
   bool finished;
 
-  virtual void step() override;
-  virtual void childSerialize(JsonObject& json) override;
+  void step() override;
+  void childSerialize(JsonObject& json) override;
 };

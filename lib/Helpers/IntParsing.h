@@ -1,17 +1,14 @@
-#ifndef _INTPARSING_H
-#define _INTPARSING_H
+#pragma once
 
 #include <Arduino.h>
 
 template <typename T>
-const T strToHex(const char* s, size_t length) {
+T strToHex(const char *s, const size_t length) {
   T value = 0;
   T base = 1;
 
   for (size_t i = length-1; i >= 0; i--) {
-    const char c = s[i];
-
-    if (c >= '0' && c <= '9') {
+    if (const char c = s[i]; c >= '0' && c <= '9') {
       value += ((c - '0') * base);
     } else if (c >= 'a' && c <= 'f') {
       value += ((c - 'a' + 10) * base);
@@ -28,12 +25,12 @@ const T strToHex(const char* s, size_t length) {
 }
 
 template <typename T>
-const T strToHex(const String& s) {
+T strToHex(const String &s) {
   return strToHex<T>(s.c_str(), s.length());
 }
 
 template <typename T>
-const T parseInt(const String& s) {
+T parseInt(const String &s) {
   if (s.startsWith("0x")) {
     return strToHex<T>(s.substring(2));
   } else {
@@ -42,7 +39,7 @@ const T parseInt(const String& s) {
 }
 
 template <typename T>
-void hexStrToBytes(const char* s, const size_t sLen, T* buffer, size_t maxLen) {
+void hexStrToBytes(const char* s, const size_t sLen, T* buffer, const size_t maxLen) {
   size_t idx = 0;
 
   for (size_t i = 0; i < sLen && idx < maxLen; ) {
@@ -57,7 +54,7 @@ void hexStrToBytes(const char* s, const size_t sLen, T* buffer, size_t maxLen) {
 
 class IntParsing {
 public:
-  static void bytesToHexStr(const uint8_t* bytes, const size_t len, char* buffer, size_t maxLen) {
+  static void bytesToHexStr(const uint8_t* bytes, const size_t len, char* buffer, const size_t maxLen) {
     char* p = buffer;
 
     for (size_t i = 0; i < len && static_cast<size_t>(p - buffer) < (maxLen - 3); i++) {
@@ -69,5 +66,3 @@ public:
     }
   }
 };
-
-#endif

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef ARDUINO
 #include "Arduino.h"
 #else
@@ -13,10 +15,7 @@
 #include <RF24Channel.h>
 #include <vector>
 
-#ifndef _NRF24_MILIGHT_RADIO_H_
-#define _NRF24_MILIGHT_RADIO_H_
-
-class NRF24MiLightRadio : public MiLightRadio {
+class NRF24MiLightRadio final : public MiLightRadio {
   public:
     NRF24MiLightRadio(
       RF24& rf, 
@@ -25,14 +24,14 @@ class NRF24MiLightRadio : public MiLightRadio {
       RF24Channel listenChannel
     );
 
-    int begin();
-    bool available();
-    int read(uint8_t frame[], size_t &frame_length);
+    int begin() override;
+    bool available() override;
+    int read(uint8_t frame[], size_t &frame_length) override;
     int dupesReceived();
-    int write(uint8_t frame[], size_t frame_length);
-    int resend();
-    int configure();
-    const MiLightRadioConfig& config();
+    int write(uint8_t frame[], size_t frame_length) override;
+    int resend() override;
+    int configure() override;
+    const MiLightRadioConfig& config() override;
 
   private:
     const std::vector<RF24Channel>& channels;
@@ -47,7 +46,3 @@ class NRF24MiLightRadio : public MiLightRadio {
     bool _waiting;
     int _dupes_received;
 };
-
-
-
-#endif

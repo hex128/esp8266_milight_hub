@@ -1,8 +1,6 @@
-#include <Arduino.h>
-#include <inttypes.h>
+#pragma once
 
-#ifndef _V2_RF_ENCODING_H
-#define _V2_RF_ENCODING_H
+#include <Arduino.h>
 
 #define V2_OFFSET_JUMP_START 0x54
 
@@ -17,5 +15,3 @@ public:
 private:
   static uint8_t const V2_OFFSETS[][4];
 };
-
-#endif

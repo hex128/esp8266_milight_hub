@@ -5,7 +5,7 @@ PacketQueue::PacketQueue()
 { }
 
 void PacketQueue::push(const uint8_t* packet, const MiLightRemoteConfig* remoteConfig, const size_t repeatsOverride) {
-  std::shared_ptr<QueuedPacket> qp = checkoutPacket();
+  const std::shared_ptr<QueuedPacket> qp = checkoutPacket();
   memcpy(qp->packet, packet, remoteConfig->packetFormatter->getPacketLength());
   qp->remoteConfig = remoteConfig;
   qp->repeatsOverride = repeatsOverride;

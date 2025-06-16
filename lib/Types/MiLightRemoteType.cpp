@@ -1,15 +1,15 @@
 #include <MiLightRemoteType.h>
 #include <Arduino.h>
 
-static const char* REMOTE_NAME_RGBW    = "rgbw";
-static const char* REMOTE_NAME_CCT     = "cct";
-static const char* REMOTE_NAME_RGB_CCT = "rgb_cct";
-static const char* REMOTE_NAME_FUT089  = "fut089";
-static const char* REMOTE_NAME_RGB     = "rgb";
-static const char* REMOTE_NAME_FUT091  = "fut091";
-static const char* REMOTE_NAME_FUT020  = "fut020";
+static auto REMOTE_NAME_RGBW    = "rgbw";
+static auto REMOTE_NAME_CCT     = "cct";
+static auto REMOTE_NAME_RGB_CCT = "rgb_cct";
+static auto REMOTE_NAME_FUT089  = "fut089";
+static auto REMOTE_NAME_RGB     = "rgb";
+static auto REMOTE_NAME_FUT091  = "fut091";
+static auto REMOTE_NAME_FUT020  = "fut020";
 
-const MiLightRemoteType MiLightRemoteTypeHelpers::remoteTypeFromString(const String& type) {
+MiLightRemoteType MiLightRemoteTypeHelpers::remoteTypeFromString(const String &type) {
   if (type.equalsIgnoreCase(REMOTE_NAME_RGBW) || type.equalsIgnoreCase("fut096")) {
     return REMOTE_TYPE_RGBW;
   }
@@ -44,7 +44,7 @@ const MiLightRemoteType MiLightRemoteTypeHelpers::remoteTypeFromString(const Str
   return REMOTE_TYPE_UNKNOWN;
 }
 
-const String MiLightRemoteTypeHelpers::remoteTypeToString(const MiLightRemoteType type) {
+String MiLightRemoteTypeHelpers::remoteTypeToString(const MiLightRemoteType type) {
   switch (type) {
     case REMOTE_TYPE_RGBW:
       return REMOTE_NAME_RGBW;
@@ -67,7 +67,7 @@ const String MiLightRemoteTypeHelpers::remoteTypeToString(const MiLightRemoteTyp
   }
 }
 
-const bool MiLightRemoteTypeHelpers::supportsRgbw(const MiLightRemoteType type) {
+bool MiLightRemoteTypeHelpers::supportsRgbw(const MiLightRemoteType type) {
   switch (type) {
     case REMOTE_TYPE_FUT089:
     case REMOTE_TYPE_RGB_CCT:
@@ -78,7 +78,7 @@ const bool MiLightRemoteTypeHelpers::supportsRgbw(const MiLightRemoteType type) 
   }
 }
 
-const bool MiLightRemoteTypeHelpers::supportsRgb(const MiLightRemoteType type) {
+bool MiLightRemoteTypeHelpers::supportsRgb(const MiLightRemoteType type) {
   switch (type) {
     case REMOTE_TYPE_FUT089:
     case REMOTE_TYPE_RGB:
@@ -90,7 +90,7 @@ const bool MiLightRemoteTypeHelpers::supportsRgb(const MiLightRemoteType type) {
   }
 }
 
-const bool MiLightRemoteTypeHelpers::supportsColorTemp(const MiLightRemoteType type) {
+bool MiLightRemoteTypeHelpers::supportsColorTemp(const MiLightRemoteType type) {
   switch (type) {
     case REMOTE_TYPE_CCT:
     case REMOTE_TYPE_FUT089:

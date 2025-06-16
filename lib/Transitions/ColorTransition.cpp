@@ -1,7 +1,13 @@
+// ReSharper disable CppExpressionWithoutSideEffects
 #include <ColorTransition.h>
 #include <Arduino.h>
 
-ColorTransition::Builder::Builder(size_t id, uint16_t defaultPeriod, const BulbId& bulbId, TransitionFn callback, const ParsedColor& start, const ParsedColor& end)
+ColorTransition::Builder::Builder(const size_t id,
+                                  const uint16_t defaultPeriod,
+                                  const BulbId &bulbId,
+                                  const TransitionFn &callback,
+                                  const ParsedColor &start,
+                                  const ParsedColor &end)
   : Transition::Builder(id, defaultPeriod, bulbId, callback, calculateMaxDistance(start, end))
   , start(start)
   , end(end)
@@ -36,23 +42,23 @@ ColorTransition::RgbColor::RgbColor(const ParsedColor& color)
   , b(color.b)
 { }
 
-ColorTransition::RgbColor::RgbColor(int16_t r, int16_t g, int16_t b)
+ColorTransition::RgbColor::RgbColor(const int16_t r, const int16_t g, const int16_t b)
   : r(r)
   , g(g)
   , b(b)
 { }
 
-bool ColorTransition::RgbColor::operator==(const RgbColor& other) {
+bool ColorTransition::RgbColor::operator==(const RgbColor& other) const {
   return r == other.r && g == other.g && b == other.b;
 }
 
 ColorTransition::ColorTransition(
-  size_t id,
+  const size_t id,
   const BulbId& bulbId,
   const RgbColor& startColor,
   const RgbColor& endColor,
-  size_t duration,
-  size_t period,
+  const size_t duration,
+  const size_t period,
   size_t numPeriods,
   TransitionFn callback
 ) : Transition(id, bulbId, period, std::move(callback))
@@ -78,12 +84,12 @@ size_t ColorTransition::calculateMaxDistance(const RgbColor& start, const RgbCol
   );
 }
 
-size_t ColorTransition::calculateColorPeriod(ColorTransition* t, const RgbColor& start, const RgbColor& end, size_t stepSize, size_t duration) {
-  return Transition::calculatePeriod(calculateMaxDistance(start, end), stepSize, duration);
+size_t ColorTransition::calculateColorPeriod(ColorTransition* t, const RgbColor& start, const RgbColor& end, const size_t stepSize, const size_t duration) {
+  return calculatePeriod(calculateMaxDistance(start, end), stepSize, duration);
 }
 
-int16_t ColorTransition::calculateStepSizePart(int16_t distance, size_t duration, size_t period) {
-  double stepSize = (distance / static_cast<double>(duration)) * period;
+int16_t ColorTransition::calculateStepSizePart(const int16_t distance, const size_t duration, const size_t period) {
+  const double stepSize = (distance / static_cast<double>(duration)) * period;
   int16_t rounded = std::ceil(std::abs(stepSize));
 
   if (distance < 0) {
@@ -94,7 +100,7 @@ int16_t ColorTransition::calculateStepSizePart(int16_t distance, size_t duration
 }
 
 void ColorTransition::step() {
-  ParsedColor parsedColor = ParsedColor::fromRgb(currentColor.r, currentColor.g, currentColor.b);
+  const ParsedColor parsedColor = ParsedColor::fromRgb(currentColor.r, currentColor.g, currentColor.b);
 
   if (parsedColor.hue != lastHue) {
     callback(bulbId, GroupStateField::HUE, parsedColor.hue);
@@ -107,9 +113,9 @@ void ColorTransition::step() {
   }
 
   if (!isFinished()) {
-    Transition::stepValue(currentColor.r, endColor.r, stepSizes.r);
-    Transition::stepValue(currentColor.g, endColor.g, stepSizes.g);
-    Transition::stepValue(currentColor.b, endColor.b, stepSizes.b);
+    stepValue(currentColor.r, endColor.r, stepSizes.r);
+    stepValue(currentColor.g, endColor.g, stepSizes.g);
+    stepValue(currentColor.b, endColor.b, stepSizes.b);
   } else {
     this->sentFinalColor = true;
   }
@@ -122,17 +128,17 @@ bool ColorTransition::isFinished() {
 void ColorTransition::childSerialize(JsonObject& json) {
   json[F("type")] = F("color");
 
-  JsonArray currentColorArr = json.createNestedArray(F("current_color"));
+  const JsonArray currentColorArr = json.createNestedArray(F("current_color"));
   currentColorArr.add(currentColor.r);
   currentColorArr.add(currentColor.g);
   currentColorArr.add(currentColor.b);
 
-  JsonArray endColorArr = json.createNestedArray(F("end_color"));
+  const JsonArray endColorArr = json.createNestedArray(F("end_color"));
   endColorArr.add(endColor.r);
   endColorArr.add(endColor.g);
   endColorArr.add(endColor.b);
 
-  JsonArray stepSizesArr = json.createNestedArray(F("step_sizes"));
+  const JsonArray stepSizesArr = json.createNestedArray(F("step_sizes"));
   stepSizesArr.add(stepSizes.r);
   stepSizesArr.add(stepSizes.g);
   stepSizesArr.add(stepSizes.b);

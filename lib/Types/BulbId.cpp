@@ -30,14 +30,14 @@ void BulbId::operator=(const BulbId &other) {
 // determine if now BulbId's are the same.  This compared deviceID (the controller/remote ID) and
 // groupId (the group number on the controller, 1-4 or 1-8 depending), but ignores the deviceType
 // (type of controller/remote) as this doesn't directly affect the identity of the bulb
-bool BulbId::operator==(const BulbId &other) {
+bool BulbId::operator==(const BulbId &other) const {
   return deviceId == other.deviceId
     && groupId == other.groupId
     && deviceType == other.deviceType;
 }
 
 uint32_t BulbId::getCompactId() const {
-  uint32_t id = (deviceId << 24) | (deviceType << 8) | groupId;
+  const uint32_t id = (deviceId << 24) | (deviceType << 8) | groupId;
   return id;
 }
 
@@ -47,16 +47,20 @@ String BulbId::getHexDeviceId() const {
   return hexDeviceId;
 }
 
-void BulbId::serialize(JsonObject json) const {
+void BulbId::serialize(const JsonObject json) const {
   json[GroupStateFieldNames::DEVICE_ID] = deviceId;
   json[GroupStateFieldNames::GROUP_ID] = groupId;
   json[GroupStateFieldNames::DEVICE_TYPE] = MiLightRemoteTypeHelpers::remoteTypeToString(deviceType);
 }
 
-void BulbId::serialize(JsonArray json) const {
-  json.add(deviceId);
+void BulbId::serialize(const JsonArray json) const {
+  if (!json.add(deviceId)) {
+    return;
+  }
+  if (!json.add(groupId)) {
+    return;
+  }
   json.add(MiLightRemoteTypeHelpers::remoteTypeToString(deviceType));
-  json.add(groupId);
 }
 
 // reads a BulbId in the format of "deviceType,deviceId,groupId"

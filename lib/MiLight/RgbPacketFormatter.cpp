@@ -10,7 +10,7 @@ void RgbPacketFormatter::initializePacket(uint8_t *packet) {
   packet[packetPtr++] = deviceId & 0xFF;
   packet[packetPtr++] = 0;
   packet[packetPtr++] = 0;
-  packet[packetPtr++] = sequenceNum++;
+  packet[packetPtr] = sequenceNum++;
 }
 
 void RgbPacketFormatter::pair() {
@@ -25,7 +25,7 @@ void RgbPacketFormatter::unpair() {
   }
 }
 
-void RgbPacketFormatter::updateStatus(MiLightStatus status, uint8_t groupId) {
+void RgbPacketFormatter::updateStatus(const MiLightStatus status, uint8_t groupId) {
   command(status == ON ? RGB_ON : RGB_OFF, 0);
 }
 
@@ -37,19 +37,19 @@ void RgbPacketFormatter::command(uint8_t command, uint8_t arg) {
   currentPacket[RGB_COMMAND_INDEX] = command;
 }
 
-void RgbPacketFormatter::updateHue(uint16_t value) {
+void RgbPacketFormatter::updateHue(const uint16_t value) {
   const int16_t remappedColor = (value + 40) % 360;
   updateColorRaw(Units::rescale(remappedColor, 255, 360));
 }
 
-void RgbPacketFormatter::updateColorRaw(uint8_t value) {
+void RgbPacketFormatter::updateColorRaw(const uint8_t value) {
   command(0, 0);
   currentPacket[RGB_COLOR_INDEX] = value;
 }
 
-void RgbPacketFormatter::updateBrightness(uint8_t value) {
-  const GroupState* state = this->stateStore->get(deviceId, groupId, MiLightRemoteType::REMOTE_TYPE_RGB);
-  int8_t knownValue = (state != NULL && state->isSetBrightness()) ? state->getBrightness() / RGB_INTERVALS : -1;
+void RgbPacketFormatter::updateBrightness(const uint8_t value) {
+  const GroupState* state = this->stateStore->get(deviceId, groupId, REMOTE_TYPE_RGB);
+  const int8_t knownValue = (state != nullptr && state->isSetBrightness()) ? state->getBrightness() / RGB_INTERVALS : -1;
 
   valueByStepFunction(
     &PacketFormatter::increaseBrightness,
@@ -84,8 +84,8 @@ void RgbPacketFormatter::previousMode() {
   command(RGB_MODE_DOWN, 0);
 }
 
-BulbId RgbPacketFormatter::parsePacket(const uint8_t* packet, JsonObject result) {
-  uint8_t command = packet[RGB_COMMAND_INDEX] & 0x7F;
+BulbId RgbPacketFormatter::parsePacket(const uint8_t* packet, const JsonObject result) {
+  const uint8_t command = packet[RGB_COMMAND_INDEX] & 0x7F;
 
   BulbId bulbId(
     (packet[1] << 8) | packet[2],

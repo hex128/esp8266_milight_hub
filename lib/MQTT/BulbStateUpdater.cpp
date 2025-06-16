@@ -17,7 +17,7 @@ void BulbStateUpdater::disable() {
   this->enabled = false;
 }
 
-void BulbStateUpdater::enqueueUpdate(BulbId bulbId, GroupState& groupState) {
+void BulbStateUpdater::enqueueUpdate(const BulbId &bulbId, GroupState& groupState) {
   staleGroups.push(bulbId);
   //Remember time, when queue was added for debounce delay
   lastQueue = millis();
@@ -36,9 +36,9 @@ void BulbStateUpdater::loop() {
   }
 }
 
-inline void BulbStateUpdater::flushGroup(BulbId bulbId, GroupState& state) {
+inline void BulbStateUpdater::flushGroup(const BulbId &bulbId, const GroupState& state) {
   StaticJsonDocument<MILIGHT_MQTT_JSON_BUFFER_SIZE> json;
-  JsonObject message = json.to<JsonObject>();
+  const JsonObject message = json.to<JsonObject>();
   state.applyState(message, bulbId, settings.groupStateFields);
 
   if (json.overflowed()) {

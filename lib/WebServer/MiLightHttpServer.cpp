@@ -4,16 +4,16 @@
 #include <Settings.h>
 #include <MiLightHttpServer.h>
 #include <MiLightRadioConfig.h>
-#include <string.h>
+#include <cstring>
 #include <TokenIterator.h>
 #include <AboutHelper.h>
 #include <GroupAlias.h>
 #include <ProjectFS.h>
 #include <StreamUtils.h>
 
-#include <index.html.gz.h>
-#include <bundle.css.gz.h>
-#include <bundle.js.gz.h>
+#include <index.html.h>
+#include <style.css.h>
+#include <script.js.h>
 #include <BackupManager.h>
 
 #ifdef ESP32
@@ -26,99 +26,99 @@ using namespace std::placeholders;
 void MiLightHttpServer::begin() {
   server
     .buildHandler("/")
-    .onSimple(HTTP_GET, std::bind(&MiLightHttpServer::handleServe_P, this, index_html_gz, index_html_gz_len, "text/html"));
+    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(index_html, index_html_len, "text/html"); });
 
   server
-    .buildHandler(bundle_css_filename)
-    .onSimple(HTTP_GET, std::bind(&MiLightHttpServer::handleServe_P, this, bundle_css_gz, bundle_css_gz_len, "text/css"));
+    .buildHandler(style_css_filename)
+    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(style_css, style_css_len, "text/css"); });
 
   server
-    .buildHandler(bundle_js_filename)
-    .onSimple(HTTP_GET, std::bind(&MiLightHttpServer::handleServe_P, this, bundle_js_gz, bundle_js_gz_len, "application/javascript"));
+    .buildHandler(script_js_filename)
+    .onSimple(HTTP_GET, [this](auto *) { handleServe_P(script_js, script_js_len, "application/javascript"); });
 
   server
     .buildHandler("/settings")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::serveSettings, this))
-    .on(HTTP_PUT, std::bind(&MiLightHttpServer::handleUpdateSettings, this, _1))
+    .on(HTTP_GET, [this](auto&) { serveSettings(); })
+    .on(HTTP_PUT, [this](auto && PH1) { handleUpdateSettings(std::forward<decltype(PH1)>(PH1)); })
     .on(
       HTTP_POST,
-      std::bind(&MiLightHttpServer::handleUpdateSettingsPost, this, _1),
-      std::bind(&MiLightHttpServer::handleUpdateFile, this, SETTINGS_FILE)
+      [this](auto && PH1) { handleUpdateSettingsPost(std::forward<decltype(PH1)>(PH1)); },
+      [this](auto&) { handleUpdateFile(SETTINGS_FILE); }
     );
 
   server
     .buildHandler("/backup")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleCreateBackup, this, _1))
+    .on(HTTP_GET, [this](auto && PH1) { handleCreateBackup(std::forward<decltype(PH1)>(PH1)); })
     .on(
         HTTP_POST,
-        std::bind(&MiLightHttpServer::handleRestoreBackup, this, _1),
-        std::bind(&MiLightHttpServer::handleUpdateFile, this, BACKUP_FILE));
+        [this](auto && PH1) { handleRestoreBackup(std::forward<decltype(PH1)>(PH1)); },
+        [this](auto&) { handleUpdateFile(BACKUP_FILE); });
 
   server
     .buildHandler("/remote_configs")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleGetRadioConfigs, this, _1));
+    .on(HTTP_GET, [this](auto && PH1) { handleGetRadioConfigs(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/gateway_traffic")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleListenGateway, this, _1));
+    .on(HTTP_GET, [this](auto && PH1) { handleListenGateway(std::forward<decltype(PH1)>(PH1)); });
   server
     .buildHandler("/gateway_traffic/:type")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleListenGateway, this, _1));
+    .on(HTTP_GET, [this](auto && PH1) { handleListenGateway(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/gateways/:device_id/:type/:group_id")
-    .on(HTTP_PUT, std::bind(&MiLightHttpServer::handleUpdateGroup, this, _1))
-    .on(HTTP_POST, std::bind(&MiLightHttpServer::handleUpdateGroup, this, _1))
-    .on(HTTP_DELETE, std::bind(&MiLightHttpServer::handleDeleteGroup, this, _1))
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleGetGroup, this, _1));
+    .on(HTTP_PUT, [this](auto && PH1) { handleUpdateGroup(std::forward<decltype(PH1)>(PH1)); })
+    .on(HTTP_POST, [this](auto && PH1) { handleUpdateGroup(std::forward<decltype(PH1)>(PH1)); })
+    .on(HTTP_DELETE, [this](auto && PH1) { handleDeleteGroup(std::forward<decltype(PH1)>(PH1)); })
+    .on(HTTP_GET, [this](auto && PH1) { handleGetGroup(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/gateways/:device_alias")
-    .on(HTTP_PUT, std::bind(&MiLightHttpServer::handleUpdateGroupAlias, this, _1))
-    .on(HTTP_POST, std::bind(&MiLightHttpServer::handleUpdateGroupAlias, this, _1))
-    .on(HTTP_DELETE, std::bind(&MiLightHttpServer::handleDeleteGroupAlias, this, _1))
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleGetGroupAlias, this, _1));
+    .on(HTTP_PUT, [this](auto && PH1) { handleUpdateGroupAlias(std::forward<decltype(PH1)>(PH1)); })
+    .on(HTTP_POST, [this](auto && PH1) { handleUpdateGroupAlias(std::forward<decltype(PH1)>(PH1)); })
+    .on(HTTP_DELETE, [this](auto && PH1) { handleDeleteGroupAlias(std::forward<decltype(PH1)>(PH1)); })
+    .on(HTTP_GET, [this](auto && PH1) { handleGetGroupAlias(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/gateways")
-    .onSimple(HTTP_GET, std::bind(&MiLightHttpServer::handleListGroups, this))
-    .on(HTTP_PUT, std::bind(&MiLightHttpServer::handleBatchUpdateGroups, this, _1));
+    .onSimple(HTTP_GET, [this](auto *) { handleListGroups(); })
+    .on(HTTP_PUT, [this](auto && PH1) { handleBatchUpdateGroups(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/transitions/:id")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleGetTransition, this, _1))
-    .on(HTTP_DELETE, std::bind(&MiLightHttpServer::handleDeleteTransition, this, _1));
+    .on(HTTP_GET, [this](auto && PH1) { handleGetTransition(std::forward<decltype(PH1)>(PH1)); })
+    .on(HTTP_DELETE, [this](auto && PH1) { handleDeleteTransition(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/transitions")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleListTransitions, this, _1))
-    .on(HTTP_POST, std::bind(&MiLightHttpServer::handleCreateTransition, this, _1));
+    .on(HTTP_GET, [this](auto && PH1) { handleListTransitions(std::forward<decltype(PH1)>(PH1)); })
+    .on(HTTP_POST, [this](auto && PH1) { handleCreateTransition(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/raw_commands/:type")
-    .on(HTTP_ANY, std::bind(&MiLightHttpServer::handleSendRaw, this, _1));
+    .on(HTTP_ANY, [this](auto && PH1) { handleSendRaw(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/about")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleAbout, this, _1));
+    .on(HTTP_GET, [this](auto && PH1) { handleAbout(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/system")
-    .on(HTTP_POST, std::bind(&MiLightHttpServer::handleSystemPost, this, _1));
+    .on(HTTP_POST, [this](auto && PH1) { handleSystemPost(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/aliases")
     .on(HTTP_GET, std::bind(&MiLightHttpServer::handleListAliases, this, _1))
-    .on(HTTP_POST, std::bind(&MiLightHttpServer::handleCreateAlias, this, _1));
+    .on(HTTP_POST, [this](auto && PH1) { handleCreateAlias(std::forward<decltype(PH1)>(PH1)); });
 
   server
     .buildHandler("/aliases.bin")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::serveFile, this, ALIASES_FILE, APPLICATION_OCTET_STREAM))
-    .on(HTTP_DELETE, std::bind(&MiLightHttpServer::handleDeleteAliases, this, _1))
+    .on(HTTP_GET, [this](auto&) { return serveFile(ALIASES_FILE, APPLICATION_OCTET_STREAM); })
+    .on(HTTP_DELETE, [this](auto && PH1) { handleDeleteAliases(std::forward<decltype(PH1)>(PH1)); })
     .on(
         HTTP_POST,
-        std::bind(&MiLightHttpServer::handleUpdateAliases, this, _1),
-        std::bind(&MiLightHttpServer::handleUpdateFile, this, ALIASES_FILE)
+        [this](auto && PH1) { handleUpdateAliases(std::forward<decltype(PH1)>(PH1)); },
+        [this](auto&) { handleUpdateFile(ALIASES_FILE); }
     );
 
   server
@@ -134,7 +134,7 @@ void MiLightHttpServer::begin() {
 
   // set up web socket server
   wsServer.onEvent(
-    [this](uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+    [this](const uint8_t num, const WStype_t type, uint8_t * payload, const size_t length) {
       handleWsEvent(num, type, payload, length);
     }
   );
@@ -143,7 +143,7 @@ void MiLightHttpServer::begin() {
   server.begin();
 }
 
-void MiLightHttpServer::onAbout(AboutHandler handler) {
+void MiLightHttpServer::onAbout(const AboutHandler &handler) {
   this->aboutHandler = handler;
 }
 
@@ -156,12 +156,12 @@ WiFiClient MiLightHttpServer::client() {
   return server.client();
 }
 
-void MiLightHttpServer::on(const char *path, HTTPMethod method, THandlerFunction handler) {
+void MiLightHttpServer::on(const char *path, const HTTPMethod method, const THandlerFunction &handler) {
   server.on(path, method, handler);
 }
 
 void MiLightHttpServer::handleSystemPost(RequestContext& request) {
-  JsonObject requestBody = request.getJsonBody().as<JsonObject>();
+  const auto requestBody = request.getJsonBody().as<JsonObject>();
 
   bool handled = false;
 
@@ -209,28 +209,28 @@ void MiLightHttpServer::serveSettings() {
   serveFile(SETTINGS_FILE, APPLICATION_JSON);
 }
 
-void MiLightHttpServer::onSettingsSaved(SettingsSavedHandler handler) {
+void MiLightHttpServer::onSettingsSaved(const SettingsSavedHandler &handler) {
   this->settingsSavedHandler = handler;
 }
 
-void MiLightHttpServer::onGroupDeleted(GroupDeletedHandler handler) {
+void MiLightHttpServer::onGroupDeleted(const GroupDeletedHandler &handler) {
   this->groupDeletedHandler = handler;
 }
 
-void MiLightHttpServer::handleAbout(RequestContext& request) {
+void MiLightHttpServer::handleAbout(const RequestContext& request) const {
   AboutHelper::generateAboutObject(request.response.json);
 
   if (this->aboutHandler) {
     this->aboutHandler(request.response.json);
   }
 
-  JsonObject queueStats = request.response.json.createNestedObject("queue_stats");
+  const JsonObject queueStats = request.response.json.createNestedObject("queue_stats");
   queueStats[F("length")] = packetSender->queueLength();
   queueStats[F("dropped_packets")] = packetSender->droppedPackets();
 }
 
-void MiLightHttpServer::handleGetRadioConfigs(RequestContext& request) {
-  JsonArray arr = request.response.json.to<JsonArray>();
+void MiLightHttpServer::handleGetRadioConfigs(const RequestContext& request) {
+  const auto arr = request.response.json.to<JsonArray>();
 
   for (size_t i = 0; i < MiLightRemoteConfig::NUM_REMOTES; i++) {
     const MiLightRemoteConfig* config = MiLightRemoteConfig::ALL_REMOTES[i];
@@ -250,7 +250,7 @@ bool MiLightHttpServer::serveFile(const char* file, const char* contentType) {
 }
 
 void MiLightHttpServer::handleUpdateFile(const char* filename) {
-  HTTPUpload& upload = server.upload();
+  const HTTPUpload& upload = server.upload();
 
   if (upload.status == UPLOAD_FILE_START) {
     updateFile = ProjectFS.open(filename, "w");
@@ -263,10 +263,8 @@ void MiLightHttpServer::handleUpdateFile(const char* filename) {
   }
 }
 
-void MiLightHttpServer::handleUpdateSettings(RequestContext& request) {
-  JsonObject parsedSettings = request.getJsonBody().as<JsonObject>();
-
-  if (! parsedSettings.isNull()) {
+void MiLightHttpServer::handleUpdateSettings(RequestContext& request) const {
+  if (const JsonObject parsedSettings = request.getJsonBody().as<JsonObject>(); ! parsedSettings.isNull()) {
     settings.patch(parsedSettings);
     saveSettings();
 
@@ -275,7 +273,7 @@ void MiLightHttpServer::handleUpdateSettings(RequestContext& request) {
   }
 }
 
-void MiLightHttpServer::handleUpdateSettingsPost(RequestContext& request) {
+void MiLightHttpServer::handleUpdateSettingsPost(const RequestContext& request) const {
   Settings::load(settings);
 
   if (this->settingsSavedHandler) {
@@ -313,8 +311,8 @@ void MiLightHttpServer::handleFirmwareUpload() {
   HTTPUpload& upload = server.upload();
   if(upload.status == UPLOAD_FILE_START){
     WiFiUDP::stopAll();
-    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-    if(!Update.begin(maxSketchSpace)){//start with max available size
+    //start with max available size
+    if(const uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000; !Update.begin(maxSketchSpace)){
       Update.printError(Serial);
     }
   } else if(upload.status == UPLOAD_FILE_WRITE){
@@ -355,32 +353,32 @@ void MiLightHttpServer::handleFirmwareUpload() {
 }
 
 
-void MiLightHttpServer::handleListenGateway(RequestContext& request) {
-  bool listenAll = !request.pathVariables.hasBinding("type");
+void MiLightHttpServer::handleListenGateway(const RequestContext& request) {
+  const bool listenAll = !request.pathVariables.hasBinding("type");
   size_t configIx = 0;
-  std::shared_ptr<MiLightRadio> radio = NULL;
-  const MiLightRemoteConfig* remoteConfig = NULL;
-  const MiLightRemoteConfig* tmpRemoteConfig = NULL;
+  std::shared_ptr<MiLightRadio> radio = nullptr;
+  const MiLightRemoteConfig* remoteConfig = nullptr;
+  const MiLightRemoteConfig* tmpRemoteConfig = nullptr;
 
   uint8_t packet[MILIGHT_MAX_PACKET_LENGTH];
 
   if (!listenAll) {
-    String strType(request.pathVariables.get("type"));
+    const String strType(request.pathVariables.get("type"));
     tmpRemoteConfig = MiLightRemoteConfig::fromType(strType);
     milightClient->prepare(tmpRemoteConfig, 0, 0);
   }
 
-  if (tmpRemoteConfig == NULL && !listenAll) {
+  if (tmpRemoteConfig == nullptr && !listenAll) {
     request.response.setCode(400);
     request.response.json["error"] = "Unknown device type supplied";
     return;
   }
 
-  if (tmpRemoteConfig != NULL) {
+  if (tmpRemoteConfig != nullptr) {
     radio = radios->switchRadio(tmpRemoteConfig);
   }
 
-  while (remoteConfig == NULL) {
+  while (remoteConfig == nullptr) {
     if (!server.client().connected()) {
       return;
     }
@@ -392,7 +390,7 @@ void MiLightHttpServer::handleListenGateway(RequestContext& request) {
     }
 
     if (radios->available()) {
-      size_t packetLen = radios->read(packet);
+      const size_t packetLen = radios->read(packet);
       remoteConfig = MiLightRemoteConfig::fromReceivedPacket(
         radio->config(),
         packet,
@@ -417,9 +415,9 @@ void MiLightHttpServer::handleListenGateway(RequestContext& request) {
   request.response.json["packet_info"] = responseBody;
 }
 
-void MiLightHttpServer::sendGroupState(bool allowAsync, BulbId& bulbId, RichHttp::Response& response) {
-  bool blockOnQueue = server.arg("blockOnQueue").equalsIgnoreCase("true");
-  bool normalizedFormat = server.arg("fmt").equalsIgnoreCase("normalized");
+void MiLightHttpServer::sendGroupState(const bool allowAsync, const BulbId& bulbId, RichHttp::Response& response) const {
+  const bool blockOnQueue = server.arg("blockOnQueue").equalsIgnoreCase("true");
+  const bool normalizedFormat = server.arg("fmt").equalsIgnoreCase("normalized");
 
   // Wait for packet queue to flush out.  State will not have been updated before that.
   // Bit hacky to call loop outside of main loop, but should be fine.
@@ -427,8 +425,8 @@ void MiLightHttpServer::sendGroupState(bool allowAsync, BulbId& bulbId, RichHttp
     packetSender->loop();
   }
 
-  JsonObject obj = response.json.to<JsonObject>();
-  GroupState* state = stateStore->get(bulbId);
+  const JsonObject obj = response.json.to<JsonObject>();
+  const GroupState* state = stateStore->get(bulbId);
 
   if (blockOnQueue || allowAsync) {
     if (state == nullptr) {
@@ -442,14 +440,14 @@ void MiLightHttpServer::sendGroupState(bool allowAsync, BulbId& bulbId, RichHttp
   }
 }
 
-void MiLightHttpServer::_handleGetGroup(bool allowAsync, BulbId bulbId, RequestContext& request) {
+void MiLightHttpServer::_handleGetGroup(const bool allowAsync, const BulbId &bulbId, const RequestContext& request) const {
   sendGroupState(allowAsync, bulbId, request.response);
 }
 
-void MiLightHttpServer::handleGetGroupAlias(RequestContext& request) {
+void MiLightHttpServer::handleGetGroupAlias(const RequestContext& request) const {
   const String alias = request.pathVariables.get("device_alias");
 
-  auto it = settings.groupIdAliases.find(alias);
+  const auto it = settings.groupIdAliases.find(alias);
 
   if (it == settings.groupIdAliases.end()) {
     request.response.setCode(404);
@@ -460,12 +458,12 @@ void MiLightHttpServer::handleGetGroupAlias(RequestContext& request) {
   _handleGetGroup(true, it->second.bulbId, request);
 }
 
-void MiLightHttpServer::handleGetGroup(RequestContext& request) {
+void MiLightHttpServer::handleGetGroup(const RequestContext& request) const {
   const String _deviceId = request.pathVariables.get(GroupStateFieldNames::DEVICE_ID);
-  uint8_t _groupId = atoi(request.pathVariables.get(GroupStateFieldNames::GROUP_ID));
+  const uint8_t _groupId = atoi(request.pathVariables.get(GroupStateFieldNames::GROUP_ID));
   const MiLightRemoteConfig* _remoteType = MiLightRemoteConfig::fromType(request.pathVariables.get("type"));
 
-  if (_remoteType == NULL) {
+  if (_remoteType == nullptr) {
     char buffer[40];
     sprintf_P(buffer, PSTR("Unknown device type\n"));
     request.response.setCode(400);
@@ -473,16 +471,16 @@ void MiLightHttpServer::handleGetGroup(RequestContext& request) {
     return;
   }
 
-  BulbId bulbId(parseInt<uint16_t>(_deviceId), _groupId, _remoteType->type);
+  const BulbId bulbId(parseInt<uint16_t>(_deviceId), _groupId, _remoteType->type);
   _handleGetGroup(true, bulbId, request);
 }
 
-void MiLightHttpServer::handleDeleteGroup(RequestContext& request) {
+void MiLightHttpServer::handleDeleteGroup(const RequestContext& request) const {
   const char* _deviceId = request.pathVariables.get("device_id");
-  uint8_t _groupId = atoi(request.pathVariables.get(GroupStateFieldNames::GROUP_ID));
+  const uint8_t _groupId = atoi(request.pathVariables.get(GroupStateFieldNames::GROUP_ID));
   const MiLightRemoteConfig* _remoteType = MiLightRemoteConfig::fromType(request.pathVariables.get("type"));
 
-  if (_remoteType == NULL) {
+  if (_remoteType == nullptr) {
     char buffer[40];
     sprintf_P(buffer, PSTR("Unknown device type\n"));
     request.response.setCode(400);
@@ -490,14 +488,14 @@ void MiLightHttpServer::handleDeleteGroup(RequestContext& request) {
     return;
   }
 
-  BulbId bulbId(parseInt<uint16_t>(_deviceId), _groupId, _remoteType->type);
+  const BulbId bulbId(parseInt<uint16_t>(_deviceId), _groupId, _remoteType->type);
   _handleDeleteGroup(bulbId, request);
 }
 
-void MiLightHttpServer::handleDeleteGroupAlias(RequestContext& request) {
+void MiLightHttpServer::handleDeleteGroupAlias(const RequestContext& request) const {
   const String alias = request.pathVariables.get("device_alias");
 
-  auto it = settings.groupIdAliases.find(alias);
+  const auto it = settings.groupIdAliases.find(alias);
 
   if (it == settings.groupIdAliases.end()) {
     request.response.setCode(404);
@@ -508,20 +506,20 @@ void MiLightHttpServer::handleDeleteGroupAlias(RequestContext& request) {
   _handleDeleteGroup(it->second.bulbId, request);
 }
 
-void MiLightHttpServer::_handleDeleteGroup(BulbId bulbId, RequestContext& request) {
+void MiLightHttpServer::_handleDeleteGroup(const BulbId &bulbId, const RequestContext& request) const {
   stateStore->clear(bulbId);
 
-  if (groupDeletedHandler != NULL) {
+  if (groupDeletedHandler != nullptr) {
     this->groupDeletedHandler(bulbId);
   }
 
   request.response.json["success"] = true;
 }
 
-void MiLightHttpServer::handleUpdateGroupAlias(RequestContext& request) {
+void MiLightHttpServer::handleUpdateGroupAlias(RequestContext& request) const {
   const String alias = request.pathVariables.get("device_alias");
 
-  auto it = settings.groupIdAliases.find(alias);
+  const auto it = settings.groupIdAliases.find(alias);
 
   if (it == settings.groupIdAliases.end()) {
     request.response.setCode(404);
@@ -532,7 +530,7 @@ void MiLightHttpServer::handleUpdateGroupAlias(RequestContext& request) {
   BulbId& bulbId = it->second.bulbId;
   const MiLightRemoteConfig* config = MiLightRemoteConfig::fromType(bulbId.deviceType);
 
-  if (config == NULL) {
+  if (config == nullptr) {
     char buffer[40];
     sprintf_P(buffer, PSTR("Unknown device type: %s"), bulbId.deviceType);
     request.response.setCode(400);
@@ -545,12 +543,12 @@ void MiLightHttpServer::handleUpdateGroupAlias(RequestContext& request) {
   sendGroupState(false, bulbId, request.response);
 }
 
-void MiLightHttpServer::handleUpdateGroup(RequestContext& request) {
-  JsonObject reqObj = request.getJsonBody().as<JsonObject>();
+void MiLightHttpServer::handleUpdateGroup(RequestContext& request) const {
+  const JsonObject reqObj = request.getJsonBody().as<JsonObject>();
 
-  String _deviceIds = request.pathVariables.get(GroupStateFieldNames::DEVICE_ID);
-  String _groupIds = request.pathVariables.get(GroupStateFieldNames::GROUP_ID);
-  String _remoteTypes = request.pathVariables.get("type");
+  const String _deviceIds = request.pathVariables.get(GroupStateFieldNames::DEVICE_ID);
+  const String _groupIds = request.pathVariables.get(GroupStateFieldNames::GROUP_ID);
+  const String _remoteTypes = request.pathVariables.get("type");
   char deviceIds[_deviceIds.length()];
   char groupIds[_groupIds.length()];
   char remoteTypes[_remoteTypes.length()];
@@ -569,7 +567,7 @@ void MiLightHttpServer::handleUpdateGroup(RequestContext& request) {
     const char* _remoteType = remoteTypesItr.nextToken();
     const MiLightRemoteConfig* config = MiLightRemoteConfig::fromType(_remoteType);
 
-    if (config == NULL) {
+    if (config == nullptr) {
       char buffer[40];
       sprintf_P(buffer, PSTR("Unknown device type: %s"), _remoteType);
       request.response.setCode(400);
@@ -600,7 +598,7 @@ void MiLightHttpServer::handleUpdateGroup(RequestContext& request) {
   }
 }
 
-void MiLightHttpServer::handleRequest(const JsonObject& request) {
+void MiLightHttpServer::handleRequest(const JsonObject& request) const {
   milightClient->setRepeatsOverride(
     settings.httpRepeatFactor * settings.packetRepeats
   );
@@ -608,11 +606,11 @@ void MiLightHttpServer::handleRequest(const JsonObject& request) {
   milightClient->clearRepeatsOverride();
 }
 
-void MiLightHttpServer::handleSendRaw(RequestContext& request) {
-  JsonObject requestBody = request.getJsonBody().as<JsonObject>();
+void MiLightHttpServer::handleSendRaw(RequestContext& request) const {
+  const JsonObject requestBody = request.getJsonBody().as<JsonObject>();
   const MiLightRemoteConfig* config = MiLightRemoteConfig::fromType(request.pathVariables.get("type"));
 
-  if (config == NULL) {
+  if (config == nullptr) {
     char buffer[50];
     sprintf_P(buffer, PSTR("Unknown device type: %s"), request.pathVariables.get("type"));
     request.response.setCode(400);
@@ -639,7 +637,7 @@ void MiLightHttpServer::handleSendRaw(RequestContext& request) {
   request.response.json["success"] = true;
 }
 
-void MiLightHttpServer::handleWsEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length) {
+void MiLightHttpServer::handleWsEvent(uint8_t num, const WStype_t type, uint8_t *payload, size_t length) {
   switch (type) {
     case WStype_DISCONNECTED:
       if (numWsClients > 0) {
@@ -657,26 +655,29 @@ void MiLightHttpServer::handleWsEvent(uint8_t num, WStype_t type, uint8_t *paylo
   }
 }
 
-void MiLightHttpServer::handlePacketSent(uint8_t *packet, const MiLightRemoteConfig& config, const BulbId& bulbId, const JsonObject& result) {
+void MiLightHttpServer::handlePacketSent(const uint8_t *packet, const MiLightRemoteConfig& config, const BulbId& bulbId, const JsonObject& result) {
   if (numWsClients > 0) {
     DynamicJsonDocument output(1024);
 
     output[F("t")] = F("packet");
-    output[F("u")].set(result);
+    if (!output[F("u")].set(result)) {
+      Serial.println(F("Failed to set packet sent result"));
+    }
 
-    JsonObject device = output.createNestedObject(F("d"));
+    const JsonObject device = output.createNestedObject(F("d"));
     device[F("di")] = bulbId.deviceId;
     device[F("gi")] = bulbId.groupId;
     device[F("rt")] = MiLightRemoteTypeHelpers::remoteTypeToString(bulbId.deviceType);
 
-    JsonArray responsePacket = output.createNestedArray(F("p"));
+    const JsonArray responsePacket = output.createNestedArray(F("p"));
     for (size_t i = 0; i < config.packetFormatter->getPacketLength(); ++i) {
-      responsePacket.add(packet[i]);
+      if (!responsePacket.add(packet[i])) {
+        Serial.println(F("Failed to add packet sent packet"));
+      }
     }
 
-    const GroupState* bulbState = this->stateStore->get(bulbId);
-    if (bulbState != nullptr) {
-      JsonObject state = output.createNestedObject(F("s"));
+    if (const GroupState* bulbState = this->stateStore->get(bulbId); bulbState != nullptr) {
+      const JsonObject state = output.createNestedObject(F("s"));
       bulbState->applyState(state, bulbId, NORMALIZED_GROUP_STATE_FIELDS);
     }
 
@@ -686,9 +687,7 @@ void MiLightHttpServer::handlePacketSent(uint8_t *packet, const MiLightRemoteCon
   }
 }
 
-void MiLightHttpServer::handleServe_P(const char* data, size_t length, const char* contentType) {
-  const size_t CHUNK_SIZE = 4096; 
-
+void MiLightHttpServer::handleServe_P(const char* data, const size_t length, const char* contentType) {
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.sendHeader("Content-Encoding", "gzip");
   server.sendHeader("Cache-Control", "public, max-age=31536000");
@@ -698,15 +697,16 @@ void MiLightHttpServer::handleServe_P(const char* data, size_t length, const cha
 
   size_t remaining = length;
   while (remaining > 0) {
-    size_t chunk = remaining > CHUNK_SIZE ? CHUNK_SIZE : remaining;
-    
+    constexpr size_t CHUNK_SIZE = 4096;
+    const size_t chunk = remaining > CHUNK_SIZE ? CHUNK_SIZE : remaining;
+
     // Send chunk size in hexadecimal format
     client.printf("%X\r\n", chunk);
-    
+
     // Send chunk data
     client.write_P(data, chunk);
     client.print("\r\n");
-    
+
     data += chunk;
     remaining -= chunk;
   }
@@ -716,24 +716,20 @@ void MiLightHttpServer::handleServe_P(const char* data, size_t length, const cha
   client.stop();
 }
 
-void MiLightHttpServer::handleGetTransition(RequestContext& request) {
-  size_t id = atoi(request.pathVariables.get("id"));
-  auto transition = transitions.getTransition(id);
+void MiLightHttpServer::handleGetTransition(const RequestContext& request) const {
+  const size_t id = atoi(request.pathVariables.get("id"));
 
-  if (transition == nullptr) {
+  if (const auto transition = transitions.getTransition(id); transition == nullptr) {
     request.response.setCode(404);
     request.response.json["error"] = "Not found";
   } else {
-    JsonObject response = request.response.json.to<JsonObject>();
+    auto response = request.response.json.to<JsonObject>();
     transition->serialize(response);
   }
 }
 
-void MiLightHttpServer::handleDeleteTransition(RequestContext& request) {
-  size_t id = atoi(request.pathVariables.get("id"));
-  bool success = transitions.deleteTransition(id);
-
-  if (success) {
+void MiLightHttpServer::handleDeleteTransition(const RequestContext& request) const {
+  if (const size_t id = atoi(request.pathVariables.get("id")); transitions.deleteTransition(id)) {
     request.response.json["success"] = true;
   } else {
     request.response.setCode(404);
@@ -741,9 +737,9 @@ void MiLightHttpServer::handleDeleteTransition(RequestContext& request) {
   }
 }
 
-void MiLightHttpServer::handleListTransitions(RequestContext& request) {
+void MiLightHttpServer::handleListTransitions(const RequestContext& request) const {
   auto current = transitions.getTransitions();
-  JsonArray transitions = request.response.json.to<JsonObject>().createNestedArray(F("transitions"));
+  const JsonArray transitions = request.response.json.to<JsonObject>().createNestedArray(F("transitions"));
 
   while (current != nullptr) {
     JsonObject json = transitions.createNestedObject();
@@ -752,8 +748,8 @@ void MiLightHttpServer::handleListTransitions(RequestContext& request) {
   }
 }
 
-void MiLightHttpServer::handleCreateTransition(RequestContext& request) {
-  JsonObject body = request.getJsonBody().as<JsonObject>();
+void MiLightHttpServer::handleCreateTransition(RequestContext& request) const {
+  const JsonObject body = request.getJsonBody().as<JsonObject>();
 
   if (! body.containsKey(GroupStateFieldNames::DEVICE_ID)
     || ! body.containsKey(GroupStateFieldNames::GROUP_ID)
@@ -767,7 +763,7 @@ void MiLightHttpServer::handleCreateTransition(RequestContext& request) {
   }
 
   const String _deviceId = body[GroupStateFieldNames::DEVICE_ID];
-  uint8_t _groupId = body[GroupStateFieldNames::GROUP_ID];
+  const uint8_t _groupId = body[GroupStateFieldNames::GROUP_ID];
   const MiLightRemoteConfig* _remoteType = nullptr;
 
   if (body.containsKey(GroupStateFieldNames::DEVICE_TYPE)) {
@@ -793,14 +789,14 @@ void MiLightHttpServer::handleCreateTransition(RequestContext& request) {
   }
 }
 
-void MiLightHttpServer::handleListAliases(RequestContext& request) {
-  uint8_t page = request.server.hasArg("page") ? request.server.arg("page").toInt() : 1;
+void MiLightHttpServer::handleListAliases(const RequestContext& request) const {
+  const uint8_t page = request.server.hasArg("page") ? request.server.arg("page").toInt() : 1;
 
   // at least 1 per page
   uint8_t perPage = request.server.hasArg("page_size") ? request.server.arg("page_size").toInt() : DEFAULT_PAGE_SIZE;
   perPage = perPage > 0 ? perPage : 1;
 
-  uint8_t numPages = settings.groupIdAliases.empty() ? 1 : ceil(settings.groupIdAliases.size() / (float) perPage);
+  const uint8_t numPages = settings.groupIdAliases.empty() ? 1 : ceil(settings.groupIdAliases.size() / (float) perPage);
 
   // check bounds
   if (page < 1 || page > numPages) {
@@ -809,9 +805,9 @@ void MiLightHttpServer::handleListAliases(RequestContext& request) {
     request.response.json[F("page")] = page;
     request.response.json[F("num_pages")] = numPages;
     return;
-  } 
+  }
 
-  JsonArray aliases = request.response.json.to<JsonObject>().createNestedArray(F("aliases"));
+  const JsonArray aliases = request.response.json.to<JsonObject>().createNestedArray(F("aliases"));
   request.response.json[F("page")] = page;
   request.response.json[F("count")] = settings.groupIdAliases.size();
   request.response.json[F("num_pages")] = numPages;
@@ -833,8 +829,8 @@ void MiLightHttpServer::handleListAliases(RequestContext& request) {
   }
 }
 
-void MiLightHttpServer::handleCreateAlias(RequestContext& request) {
-  JsonObject body = request.getJsonBody().as<JsonObject>();
+void MiLightHttpServer::handleCreateAlias(RequestContext& request) const {
+  const JsonObject body = request.getJsonBody().as<JsonObject>();
 
   if (! body.containsKey(F("alias"))
     || ! body.containsKey(GroupStateFieldNames::DEVICE_ID)
@@ -869,29 +865,24 @@ void MiLightHttpServer::handleCreateAlias(RequestContext& request) {
   request.response.json[F("id")] = settings.groupIdAliases[alias].id;
 }
 
-void MiLightHttpServer::handleDeleteAlias(RequestContext& request) {
-  const size_t id = atoi(request.pathVariables.get("id"));
-
-  if (settings.deleteAlias(id)) {
+void MiLightHttpServer::handleDeleteAlias(const RequestContext& request) const {
+  if (const size_t id = atoi(request.pathVariables.get("id")); settings.deleteAlias(id)) {
     saveSettings();
     request.response.json[F("success")] = true;
   } else {
     request.response.setCode(404);
     request.response.json[F("error")] = F("Alias not found");
-    return;
   }
 }
 
-void MiLightHttpServer::handleUpdateAlias(RequestContext& request) {
+void MiLightHttpServer::handleUpdateAlias(RequestContext& request) const {
   const size_t id = atoi(request.pathVariables.get("id"));
-  auto alias = settings.findAliasById(id);
 
-  if (alias == settings.groupIdAliases.end()) {
+  if (const auto alias = settings.findAliasById(id); alias == settings.groupIdAliases.end()) {
     request.response.setCode(404);
     request.response.json[F("error")] = F("Alias not found");
-    return;
   } else {
-    JsonObject body = request.getJsonBody().as<JsonObject>();
+    const JsonObject body = request.getJsonBody().as<JsonObject>();
     GroupAlias updatedAlias(alias->second);
 
     if (body.containsKey(F("alias"))) {
@@ -922,11 +913,11 @@ void MiLightHttpServer::handleUpdateAlias(RequestContext& request) {
   }
 }
 
-void MiLightHttpServer::handleDeleteAliases(RequestContext &request) {
+void MiLightHttpServer::handleDeleteAliases(const RequestContext &request) const {
   // buffer current aliases so we can mark them all as deleted
   std::vector<GroupAlias> aliases;
-  for (auto & alias : settings.groupIdAliases) {
-    aliases.push_back(alias.second);
+  for (auto &[fst, snd] : settings.groupIdAliases) {
+    aliases.push_back(snd);
   }
 
   ProjectFS.remove(ALIASES_FILE);
@@ -944,11 +935,11 @@ void MiLightHttpServer::handleDeleteAliases(RequestContext &request) {
   request.response.json[F("success")] = true;
 }
 
-void MiLightHttpServer::handleUpdateAliases(RequestContext& request) {
+void MiLightHttpServer::handleUpdateAliases(const RequestContext& request) const {
   // buffer current aliases so we can mark any that were removed as deleted
   std::vector<GroupAlias> aliases;
-  for (auto & alias : settings.groupIdAliases) {
-    aliases.push_back(alias.second);
+  for (auto &[fst, snd] : settings.groupIdAliases) {
+    aliases.push_back(snd);
   }
 
   Settings::load(settings);
@@ -965,7 +956,7 @@ void MiLightHttpServer::handleUpdateAliases(RequestContext& request) {
   request.response.json[F("success")] = true;
 }
 
-void MiLightHttpServer::saveSettings() {
+void MiLightHttpServer::saveSettings() const {
   settings.save();
 
   if (this->settingsSavedHandler) {
@@ -973,11 +964,10 @@ void MiLightHttpServer::saveSettings() {
   }
 }
 
-void MiLightHttpServer::handleRestoreBackup(RequestContext &request) {
+void MiLightHttpServer::handleRestoreBackup(const RequestContext &request) const {
   File backupFile = ProjectFS.open(BACKUP_FILE, "r");
-  auto status = BackupManager::restoreBackup(settings, backupFile);
 
-  if (status == BackupManager::RestoreStatus::OK) {
+  if (auto status = BackupManager::restoreBackup(settings, backupFile); status == BackupManager::RestoreStatus::OK) {
     request.response.json[F("success")] = true;
     request.response.json[F("message")] = F("Backup restored successfully");
   } else {
@@ -986,7 +976,7 @@ void MiLightHttpServer::handleRestoreBackup(RequestContext &request) {
   }
 }
 
-void MiLightHttpServer::handleCreateBackup(RequestContext &request) {
+void MiLightHttpServer::handleCreateBackup(const RequestContext &request) {
   File backupFile = ProjectFS.open(BACKUP_FILE, "w");
 
   if (!backupFile) {
@@ -1021,22 +1011,22 @@ void MiLightHttpServer::handleListGroups() {
   server.sendContent("[");
 
   bool firstGroup = true;
-  for (auto & group : settings.groupIdAliases) {
+  for (auto &[fst, snd] : settings.groupIdAliases) {
     stateBuffer.clear();
 
     JsonObject device = stateBuffer.createNestedObject(F("device"));
 
-    device[F("alias")] = group.first;
-    device[F("id")] = group.second.id;
-    device[F("device_id")] = group.second.bulbId.deviceId;
-    device[F("group_id")] = group.second.bulbId.groupId;
-    device[F("device_type")] = MiLightRemoteTypeHelpers::remoteTypeToString(group.second.bulbId.deviceType);
-    
-    GroupState* state = this->stateStore->get(group.second.bulbId);
-    JsonObject outputState = stateBuffer.createNestedObject(F("state"));
+    device[F("alias")] = fst;
+    device[F("id")] = snd.id;
+    device[F("device_id")] = snd.bulbId.deviceId;
+    device[F("group_id")] = snd.bulbId.groupId;
+    device[F("device_type")] = MiLightRemoteTypeHelpers::remoteTypeToString(snd.bulbId.deviceType);
+
+    const GroupState* state = this->stateStore->get(snd.bulbId);
+    const JsonObject outputState = stateBuffer.createNestedObject(F("state"));
 
     if (state != nullptr) {
-      state->applyState(outputState, group.second.bulbId, NORMALIZED_GROUP_STATE_FIELDS);
+      state->applyState(outputState, snd.bulbId, NORMALIZED_GROUP_STATE_FIELDS);
     }
 
     client.printf("%zx\r\n", measureJson(stateBuffer)+(firstGroup ? 0 : 1));
@@ -1059,8 +1049,8 @@ void MiLightHttpServer::handleListGroups() {
   server.client().stop();
 }
 
-void MiLightHttpServer::handleBatchUpdateGroups(RequestContext& request) {
-  JsonArray body = request.getJsonBody().as<JsonArray>();
+void MiLightHttpServer::handleBatchUpdateGroups(RequestContext& request) const {
+  const JsonArray body = request.getJsonBody().as<JsonArray>();
 
   if (body.size() == 0) {
     request.response.setCode(400);
@@ -1069,11 +1059,11 @@ void MiLightHttpServer::handleBatchUpdateGroups(RequestContext& request) {
   }
 
   for (auto update : body) {
-    JsonArray gateways = update[F("gateways")].as<JsonArray>();
-    JsonObject stateUpdate = update[F("update")].as<JsonObject>();
+    auto gateways = update[F("gateways")].as<JsonArray>();
+    auto stateUpdate = update[F("update")].as<JsonObject>();
 
     for (auto gateway : gateways) {
-      BulbId bulbId(
+      const BulbId bulbId(
         gateway[F("device_id")],
         gateway[F("group_id")],
         MiLightRemoteTypeHelpers::remoteTypeFromString(gateway[F("device_type")].as<const char*>())

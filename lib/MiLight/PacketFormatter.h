@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 #include <inttypes.h>
 #include <functional>
@@ -6,9 +8,6 @@
 #include <GroupState.h>
 #include <GroupStateStore.h>
 #include <Settings.h>
-
-#ifndef _PACKET_FORMATTER_H
-#define _PACKET_FORMATTER_H
 
 // Most packets sent is for CCT bulbs, which always includes 10 down commands
 // and can include up to 10 up commands.  CCT packets are 7 bytes.
@@ -29,7 +28,8 @@ struct PacketStream {
 
 class PacketFormatter {
 public:
-  PacketFormatter(const MiLightRemoteType deviceType, const size_t packetLength, const size_t maxPackets = 1);
+  virtual ~PacketFormatter() = default;
+  PacketFormatter(MiLightRemoteType deviceType, size_t packetLength, size_t maxPackets = 1);
 
   // Ideally these would be constructor parameters.  We could accomplish this by
   // wrapping PacketFormaters in a factory, as Settings and StateStore are not
@@ -40,7 +40,7 @@ public:
 
   typedef void (PacketFormatter::*StepFunction)();
 
-  virtual bool canHandle(const uint8_t* packet, const size_t len);
+  virtual bool canHandle(const uint8_t* packet, size_t len);
 
   void updateStatus(MiLightStatus status);
   void toggleStatus();
@@ -100,8 +100,8 @@ protected:
   uint8_t groupId;
   uint8_t sequenceNum;
   PacketStream packetStream;
-  GroupStateStore* stateStore = NULL;
-  const Settings* settings = NULL;
+  GroupStateStore* stateStore = nullptr;
+  const Settings* settings = nullptr;
 
   void pushPacket();
 
@@ -116,5 +116,3 @@ protected:
   virtual void initializePacket(uint8_t* packetStart) = 0;
   virtual void finalizePacket(uint8_t* packet);
 };
-
-#endif

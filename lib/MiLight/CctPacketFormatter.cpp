@@ -1,7 +1,7 @@
 #include <CctPacketFormatter.h>
 #include <MiLightCommands.h>
 
-static const uint8_t CCT_PROTOCOL_ID = 0x5A;
+static constexpr uint8_t CCT_PROTOCOL_ID = 0x5A;
 
 bool CctPacketFormatter::canHandle(const uint8_t *packet, const size_t len) {
   return len == packetLength && packet[0] == CCT_PROTOCOL_ID;
@@ -30,17 +30,15 @@ void CctPacketFormatter::initializePacket(uint8_t* packet) {
 
   // Byte 7: Checksum over previous bytes, including packet length = 7
   // The checksum will be calculated when setting the command field
-  packet[packetPtr++] = 0;
+  packet[packetPtr] = 0;
 
   // Byte 8: CRC LSB
   // Byte 9: CRC MSB
 }
 
 void CctPacketFormatter::finalizePacket(uint8_t* packet) {
-  uint8_t checksum;
-
   // Calculate checksum over packet length .. sequenceNum
-  checksum = 7; // Packet length is not part of packet
+  uint8_t checksum = 7; // Packet length is not part of packet
   for (uint8_t i = 0; i < 6; i++) {
     checksum += currentPacket[i];
   }
@@ -48,9 +46,9 @@ void CctPacketFormatter::finalizePacket(uint8_t* packet) {
   currentPacket[6] = checksum;
 }
 
-void CctPacketFormatter::updateBrightness(uint8_t value) {
-  const GroupState* state = this->stateStore->get(deviceId, groupId, MiLightRemoteType::REMOTE_TYPE_CCT);
-  int8_t knownValue = (state != NULL && state->isSetBrightness()) ? state->getBrightness() / CCT_INTERVALS : -1;
+void CctPacketFormatter::updateBrightness(const uint8_t value) {
+  const GroupState* state = this->stateStore->get(deviceId, groupId, REMOTE_TYPE_CCT);
+  const int8_t knownValue = (state != nullptr && state->isSetBrightness()) ? state->getBrightness() / CCT_INTERVALS : -1;
 
   valueByStepFunction(
     &PacketFormatter::increaseBrightness,
@@ -61,9 +59,9 @@ void CctPacketFormatter::updateBrightness(uint8_t value) {
   );
 }
 
-void CctPacketFormatter::updateTemperature(uint8_t value) {
-  const GroupState* state = this->stateStore->get(deviceId, groupId, MiLightRemoteType::REMOTE_TYPE_CCT);
-  int8_t knownValue = (state != NULL && state->isSetKelvin()) ? state->getKelvin() / CCT_INTERVALS : -1;
+void CctPacketFormatter::updateTemperature(const uint8_t value) {
+  const GroupState* state = this->stateStore->get(deviceId, groupId, REMOTE_TYPE_CCT);
+  const int8_t knownValue = (state != nullptr && state->isSetKelvin()) ? state->getKelvin() / CCT_INTERVALS : -1;
 
   valueByStepFunction(
     &PacketFormatter::increaseTemperature,
@@ -82,7 +80,7 @@ void CctPacketFormatter::command(uint8_t command, uint8_t arg) {
   currentPacket[CCT_COMMAND_INDEX] = command;
 }
 
-void CctPacketFormatter::updateStatus(MiLightStatus status, uint8_t groupId) {
+void CctPacketFormatter::updateStatus(const MiLightStatus status, const uint8_t groupId) {
   command(getCctStatusButton(groupId, status), 0);
 }
 
@@ -106,7 +104,7 @@ void CctPacketFormatter::enableNightMode() {
   command(getCctStatusButton(groupId, OFF) | 0x10, 0);
 }
 
-uint8_t CctPacketFormatter::getCctStatusButton(uint8_t groupId, MiLightStatus status) {
+uint8_t CctPacketFormatter::getCctStatusButton(const uint8_t groupId, const MiLightStatus status) {
   uint8_t button = 0;
 
   if (status == ON) {
@@ -126,6 +124,7 @@ uint8_t CctPacketFormatter::getCctStatusButton(uint8_t groupId, MiLightStatus st
       case 4:
         button = CCT_GROUP_4_ON;
         break;
+      default: button = 0;
     }
   } else {
     switch(groupId) {
@@ -144,13 +143,15 @@ uint8_t CctPacketFormatter::getCctStatusButton(uint8_t groupId, MiLightStatus st
       case 4:
         button = CCT_GROUP_4_OFF;
         break;
+      default:
+        button = 0;
     }
   }
 
   return button;
 }
 
-uint8_t CctPacketFormatter::cctCommandIdToGroup(uint8_t command) {
+uint8_t CctPacketFormatter::cctCommandIdToGroup(const uint8_t command) {
   switch (command & 0xF) {
     case CCT_GROUP_1_ON:
     case CCT_GROUP_1_OFF:
@@ -167,12 +168,12 @@ uint8_t CctPacketFormatter::cctCommandIdToGroup(uint8_t command) {
     case CCT_ALL_ON:
     case CCT_ALL_OFF:
       return 0;
+    default:
+      return 255;
   }
-
-  return 255;
 }
 
-MiLightStatus CctPacketFormatter::cctCommandToStatus(uint8_t command) {
+MiLightStatus CctPacketFormatter::cctCommandToStatus(const uint8_t command) {
   switch (command & 0xF) {
     case CCT_GROUP_1_ON:
     case CCT_GROUP_2_ON:
@@ -190,10 +191,10 @@ MiLightStatus CctPacketFormatter::cctCommandToStatus(uint8_t command) {
   }
 }
 
-BulbId CctPacketFormatter::parsePacket(const uint8_t* packet, JsonObject result) {
-  uint8_t command = packet[CCT_COMMAND_INDEX] & 0x7F;
+BulbId CctPacketFormatter::parsePacket(const uint8_t* packet, const JsonObject result) {
+  const uint8_t command = packet[CCT_COMMAND_INDEX] & 0x7F;
 
-  uint8_t onOffGroupId = cctCommandIdToGroup(command);
+  const uint8_t onOffGroupId = cctCommandIdToGroup(command);
   BulbId bulbId(
     (packet[1] << 8) | packet[2],
     onOffGroupId < 255 ? onOffGroupId : packet[3],
@@ -221,5 +222,5 @@ BulbId CctPacketFormatter::parsePacket(const uint8_t* packet, JsonObject result)
 }
 
 void CctPacketFormatter::format(uint8_t const* packet, char* buffer) {
-  PacketFormatter::formatV1Packet(packet, buffer);
+  formatV1Packet(packet, buffer);
 }

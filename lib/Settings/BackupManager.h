@@ -1,9 +1,4 @@
-//
-// Created by chris on 9/18/2023.
-//
-
-#ifndef ESP8266_MILIGHT_HUB_BACKUPMANAGER_H
-#define ESP8266_MILIGHT_HUB_BACKUPMANAGER_H
+#pragma once
 
 #include <Settings.h>
 
@@ -28,6 +23,3 @@ public:
     static void createBackup(const Settings& settings, Stream& stream);
     static RestoreStatus restoreBackup(Settings& settings, Stream& stream);
 };
-
-
-#endif //ESP8266_MILIGHT_HUB_BACKUPMANAGER_H

@@ -1,7 +1,7 @@
 #include <LEDStatus.h>
 
 // constructor defines which pin the LED is attached to
-LEDStatus::LEDStatus(int8_t ledPin) {
+LEDStatus::LEDStatus(uint8_t ledPin) {
   // if pin negative, reverse and set inverse on pin outputs
   if (ledPin < 0) {
     ledPin = -ledPin;
@@ -17,7 +17,7 @@ LEDStatus::LEDStatus(int8_t ledPin) {
 }
 
 // change pin at runtime
-void LEDStatus::changePin(int8_t ledPin) {
+void LEDStatus::changePin(uint8_t ledPin) {
   bool inverse;
   // if pin negative, reverse and set inverse on pin outputs
   if (ledPin < 0) {
@@ -40,14 +40,14 @@ void LEDStatus::changePin(int8_t ledPin) {
 
 
 // identify how to flash the LED by mode, continuously until changed
-void LEDStatus::continuous(LEDStatus::LEDMode mode) {
+void LEDStatus::continuous(const LEDMode mode) {
   uint16_t ledOffMs, ledOnMs;
   _modeToTime(mode, ledOffMs, ledOnMs);
   continuous(ledOffMs, ledOnMs);
 }
 
 // identify how to flash the LED by on/off times (in ms), continuously until changed
-void LEDStatus::continuous(uint16_t ledOffMs, uint16_t ledOnMs) {
+void LEDStatus::continuous(const uint16_t ledOffMs, const uint16_t ledOnMs) {
   _continuousOffMs = ledOffMs;
   _continuousOnMs = ledOnMs;
   _continuousCurrentlyOn = false;
@@ -60,14 +60,14 @@ void LEDStatus::continuous(uint16_t ledOffMs, uint16_t ledOnMs) {
 }
 
 // identify a one-shot LED action (overrides continuous until done) by mode
-void LEDStatus::oneshot(LEDStatus::LEDMode mode, uint8_t count) {
+void LEDStatus::oneshot(const LEDMode mode, const uint8_t count) {
   uint16_t ledOffMs, ledOnMs;
   _modeToTime(mode, ledOffMs, ledOnMs);
   oneshot(ledOffMs, ledOnMs, count);
 }
 
 // identify a one-shot LED action (overrides continuous until done) by times (in ms)
-void LEDStatus::oneshot(uint16_t ledOffMs, uint16_t ledOnMs, uint8_t count) {
+void LEDStatus::oneshot(const uint16_t ledOffMs, const uint16_t ledOnMs, const uint8_t count) {
   _oneshotOffMs = ledOffMs;
   _oneshotOnMs = ledOnMs;
   _oneshotCountRemaining = count;
@@ -82,7 +82,7 @@ void LEDStatus::oneshot(uint16_t ledOffMs, uint16_t ledOnMs, uint8_t count) {
 
 // call this function in your loop - it will return quickly after calculating if any changes need to
 // be made to the pin to flash the LED
-void LEDStatus::LEDStatus::handle() {
+void LEDStatus::handle() {
   // is a pin defined?
   if (_ledPin == 0) {
     return;
@@ -134,21 +134,21 @@ void LEDStatus::LEDStatus::handle() {
 }
 
 // helper function to convert an LEDMode enum to a string
-String LEDStatus::LEDModeToString(LEDStatus::LEDMode mode) {
+String LEDStatus::LEDModeToString(const LEDMode mode) {
   switch (mode) {
-    case LEDStatus::LEDMode::Off:
+    case LEDMode::Off:
       return "Off";
-    case LEDStatus::LEDMode::SlowToggle:
+    case LEDMode::SlowToggle:
       return "Slow toggle";
-    case LEDStatus::LEDMode::FastToggle:
+    case LEDMode::FastToggle:
       return "Fast toggle";
-    case LEDStatus::LEDMode::SlowBlip:
+    case LEDMode::SlowBlip:
       return "Slow blip";
-    case LEDStatus::LEDMode::FastBlip:
+    case LEDMode::FastBlip:
       return "Fast blip";
-    case LEDStatus::LEDMode::Flicker:
+    case LEDMode::Flicker:
       return "Flicker";
-    case LEDStatus::LEDMode::On:
+    case LEDMode::On:
       return "On";
     default:
       return "Unknown";
@@ -156,28 +156,28 @@ String LEDStatus::LEDModeToString(LEDStatus::LEDMode mode) {
 }
 
 // helper function to convert a string to an LEDMode enum (note, mismatch returns LedMode::Unknown)
-LEDStatus::LEDMode LEDStatus::stringToLEDMode(String mode) {
+LEDStatus::LEDMode LEDStatus::stringToLEDMode(const String &mode) {
   if (mode == "Off")
-    return LEDStatus::LEDMode::Off;
+    return LEDMode::Off;
   if (mode == "Slow toggle")
-    return LEDStatus::LEDMode::SlowToggle;
+    return LEDMode::SlowToggle;
   if (mode == "Fast toggle")
-    return LEDStatus::LEDMode::FastToggle;
+    return LEDMode::FastToggle;
   if (mode == "Slow blip")
-    return LEDStatus::LEDMode::SlowBlip;
+    return LEDMode::SlowBlip;
   if (mode == "Fast blip")
-    return LEDStatus::LEDMode::FastBlip;
+    return LEDMode::FastBlip;
   if (mode == "Flicker")
-    return LEDStatus::LEDMode::Flicker;
+    return LEDMode::Flicker;
   if (mode == "On")
-    return LEDStatus::LEDMode::On;
+    return LEDMode::On;
   // unable to match...
-  return LEDStatus::LEDMode::Unknown;
+  return LEDMode::Unknown;
 }
 
 
 // private helper converts mode to on/off times in ms
-void LEDStatus::_modeToTime(LEDStatus::LEDMode mode, uint16_t& ledOffMs, uint16_t& ledOnMs) {
+void LEDStatus::_modeToTime(const LEDMode mode, uint16_t& ledOffMs, uint16_t& ledOnMs) {
   switch (mode) {
     case LEDMode::Off:
       ledOffMs = 1000;
@@ -216,10 +216,9 @@ void LEDStatus::_modeToTime(LEDStatus::LEDMode mode, uint16_t& ledOffMs, uint16_
 }
 
 // private helper to optionally inverse the LED
-uint8_t LEDStatus::_pinState(uint8_t val) {
+uint8_t LEDStatus::_pinState(const uint8_t val) const {
   if (_inverse) {
     return (val == LOW) ? HIGH : LOW;
   }
   return val;
 }
-

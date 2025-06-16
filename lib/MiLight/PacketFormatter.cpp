@@ -23,7 +23,7 @@ PacketFormatter::PacketFormatter(const MiLightRemoteType deviceType, const size_
   : deviceType(deviceType),
     packetLength(packetLength),
     numPackets(0),
-    currentPacket(NULL),
+    currentPacket(nullptr),
     held(false)
 {
   packetStream.packetLength = packetLength;
@@ -40,21 +40,21 @@ bool PacketFormatter::canHandle(const uint8_t *packet, const size_t len) {
 
 void PacketFormatter::finalizePacket(uint8_t* packet) { }
 
-void PacketFormatter::updateStatus(MiLightStatus status) {
+void PacketFormatter::updateStatus(const MiLightStatus status) {
   updateStatus(status, groupId);
 }
 
 void PacketFormatter::toggleStatus() {
   const GroupState* state = stateStore->get(deviceId, groupId, deviceType);
 
-  if (state && state->isSetState() && state->getState() == MiLightStatus::ON) {
-    updateStatus(MiLightStatus::OFF);
+  if (state && state->isSetState() && state->getState() == ON) {
+    updateStatus(OFF);
   } else {
-    updateStatus(MiLightStatus::ON);
+    updateStatus(ON);
   }
 }
 
-void PacketFormatter::setHeld(bool held) {
+void PacketFormatter::setHeld(const bool held) {
   this->held = held;
 }
 
@@ -105,7 +105,7 @@ PacketStream& PacketFormatter::buildPackets() {
   return packetStream;
 }
 
-void PacketFormatter::valueByStepFunction(StepFunction increase, StepFunction decrease, uint8_t numSteps, uint8_t targetValue, int8_t knownValue) {
+void PacketFormatter::valueByStepFunction(const StepFunction increase, const StepFunction decrease, const uint8_t numSteps, const uint8_t targetValue, const int8_t knownValue) {
   StepFunction fn;
   size_t numCommands = 0;
 
@@ -134,7 +134,7 @@ void PacketFormatter::valueByStepFunction(StepFunction increase, StepFunction de
   }
 }
 
-void PacketFormatter::prepare(uint16_t deviceId, uint8_t groupId) {
+void PacketFormatter::prepare(const uint16_t deviceId, const uint8_t groupId) {
   this->deviceId = deviceId;
   this->groupId = groupId;
   reset();

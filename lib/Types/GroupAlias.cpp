@@ -7,14 +7,13 @@ bool GroupAlias::load(Stream &stream) {
   id = stream.parseInt();
 
   // expect null terminator
-  char c = stream.read();
-  if (c != 0) {
+  if (const char c = stream.read(); c != 0) {
     Serial.printf_P(PSTR("ERROR: alias file invalid. expected null after id but got %c (0x%02x)\n"), c, c);
     return false;
   }
 
   // read alias
-  size_t len = stream.readBytesUntil('\0', alias, MAX_ALIAS_LEN);
+  const size_t len = stream.readBytesUntil('\0', alias, MAX_ALIAS_LEN);
   alias[len] = 0;
 
   // load bulbId
@@ -53,7 +52,7 @@ void GroupAlias::loadAliases(Stream &stream, std::map<String, GroupAlias> &alias
 void GroupAlias::saveAliases(Stream &stream, const std::map<String, GroupAlias> &aliases) {
   // Write number of aliases
   stream.print(aliases.size());
-  stream.write((uint8_t)0);
+  stream.write(static_cast<uint8_t>(0));
 
   Serial.printf_P(PSTR("Saving %d aliases\n"), aliases.size());
 

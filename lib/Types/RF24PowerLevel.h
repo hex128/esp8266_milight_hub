@@ -1,8 +1,7 @@
+#pragma once
+
 #include <Arduino.h>
 #include <RF24.h>
-
-#ifndef _RF24_POWER_LEVEL_H
-#define _RF24_POWER_LEVEL_H
 
 enum class RF24PowerLevel {
   RF24_MIN  = RF24_PA_MIN,  // -18 dBm
@@ -18,5 +17,3 @@ public:
   static RF24PowerLevel defaultValue();
   static uint8_t rf24ValueFromValue(const RF24PowerLevel& vlaue);
 };
-
-#endif

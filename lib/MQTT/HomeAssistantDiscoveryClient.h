@@ -19,7 +19,7 @@ private:
   Settings& settings;
   MqttClient* mqttClient;
 
-  String buildTopic(const BulbId& bulbId);
+  String buildTopic(const BulbId& bulbId) const;
   String bindTopicVariables(const String& topic, const char* alias, const BulbId& bulbId);
-  void addNumberedEffects(JsonArray& effectList, uint8_t start, uint8_t end);
+  void addNumberedEffects(const JsonArray& effectList, uint8_t start, uint8_t end);
 };

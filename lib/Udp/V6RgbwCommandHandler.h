@@ -1,7 +1,6 @@
-#include <V6CommandHandler.h>
+#pragma once
 
-#ifndef _V6_RGBW_COMMAND_HANDLER_H
-#define _V6_RGBW_COMMAND_HANDLER_H
+#include <V6CommandHandler.h>
 
 enum RgbwCommandIds {
   V2_RGBW_COLOR_PREFIX      = 0x01,
@@ -36,5 +35,3 @@ public:
   );
 
 };
-
-#endif

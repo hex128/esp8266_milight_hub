@@ -1,6 +1,7 @@
 /**
  * Enqueues updated bulb states and flushes them at the configured interval.
  */
+#pragma once
 
 #include <stddef.h>
 #include <MqttClient.h>
@@ -11,14 +12,11 @@
 #define MILIGHT_MQTT_JSON_BUFFER_SIZE 1024
 #endif
 
-#ifndef BULB_STATE_UPDATER
-#define BULB_STATE_UPDATER
-
 class BulbStateUpdater {
 public:
   BulbStateUpdater(Settings& settings, MqttClient& mqttClient, GroupStateStore& stateStore);
 
-  void enqueueUpdate(BulbId bulbId, GroupState& groupState);
+  void enqueueUpdate(const BulbId &bulbId, GroupState& groupState);
   void loop();
   void enable();
   void disable();
@@ -32,8 +30,6 @@ private:
   unsigned long lastQueue;
   bool enabled;
 
-  inline void flushGroup(BulbId bulbId, GroupState& state);
+  inline void flushGroup(const BulbId &bulbId, const GroupState& state);
   inline bool canFlush() const;
 };
-
-#endif

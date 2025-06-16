@@ -1,7 +1,6 @@
-#include <V6CommandHandler.h>
+#pragma once
 
-#ifndef _V6_RGB_COMMAND_HANDLER_H
-#define _V6_RGB_COMMAND_HANDLER_H
+#include <V6CommandHandler.h>
 
 enum RgbCommandIds {
   V2_RGB_COMMAND_PREFIX  = 0x02,
@@ -16,24 +15,22 @@ enum RgbCommandIds {
   V2_RGB_OFF             = 0x0A
 };
 
-class V6RgbCommandHandler : public V6CommandHandler {
+class V6RgbCommandHandler final : public V6CommandHandler {
 public:
   V6RgbCommandHandler()
     : V6CommandHandler(0x0500, FUT098Config)
   { }
 
-  virtual bool handleCommand(
+  bool handleCommand(
     MiLightClient* client,
     uint32_t command,
     uint32_t commandArg
-  );
+  ) override;
 
-  virtual bool handlePreset(
+  bool handlePreset(
     MiLightClient* client,
     uint8_t commandLsb,
     uint32_t commandArg
-  );
+  ) override;
 
 };
-
-#endif
