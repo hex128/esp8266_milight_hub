@@ -29,8 +29,8 @@ void FUT089PacketFormatter::updateColorRaw(const uint8_t value) {
   command(FUT089_COLOR, FUT089_COLOR_OFFSET + value);
 }
 
-// change the temperature (kelvin).  Note that temperature and saturation share the same command
-// number (7), and they change which they do based on the mode of the lamp (white vs. color mode).
+// Change the temperature (kelvin). Note that temperature and saturation share the same command
+// number (7), and they change what they do based on the mode of the lamp (white vs. color mode).
 // To make this command work, we need to switch to white mode, make the change, and then flip
 // back to the original mode.
 void FUT089PacketFormatter::updateTemperature(const uint8_t value) {
@@ -56,8 +56,8 @@ void FUT089PacketFormatter::updateTemperature(const uint8_t value) {
   }
 }
 
-// change the saturation.  Note that temperature and saturation share the same command
-// number (7), and they change which they do based on the mode of the lamp (white vs. color mode).
+// Change the saturation. Note that temperature and saturation share the same command
+// number (7), and they change what they do based on the mode of the lamp (white vs. color mode).
 // Therefore, if we are not in color mode, we need to switch to color mode, make the change,
 // and switch back to the original mode.
 void FUT089PacketFormatter::updateSaturation(const uint8_t value) {
@@ -77,7 +77,7 @@ void FUT089PacketFormatter::updateSaturation(const uint8_t value) {
   // now make the saturation change
   command(FUT089_SATURATION, 100 - value);
 
-  // and revert back if necessary
+  // and revert if necessary
   if (ourState != nullptr && (settings->enableAutomaticModeSwitching) && (originalBulbMode != BULB_MODE_COLOR)) {
     switchMode(*ourState, originalBulbMode);
   }
@@ -138,9 +138,7 @@ BulbId FUT089PacketFormatter::parsePacket(const uint8_t *packet, const JsonObjec
   // saturation == kelvin. arg ranges are the same, so can't distinguish
   // without using state
   } else if (command == FUT089_SATURATION) {
-    const GroupState* state = stateStore->get(bulbId);
-
-    if (state != nullptr && state->getBulbMode() == BULB_MODE_COLOR) {
+    if (const GroupState* state = stateStore->get(bulbId); state != nullptr && state->getBulbMode() == BULB_MODE_COLOR) {
       result[GroupStateFieldNames::SATURATION] = 100 - constrain(arg, 0, 100);
     } else {
       result[GroupStateFieldNames::COLOR_TEMP] = Units::whiteValToMireds(100 - arg, 100);

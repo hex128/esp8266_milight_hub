@@ -5,9 +5,9 @@ GroupStateCache::GroupStateCache(const size_t maxSize)
 { }
 
 GroupStateCache::~GroupStateCache() {
-  ListNode<GroupCacheNode*>* cur = cache.getHead();
+  const ListNode<GroupCacheNode*>* cur = cache.getHead();
 
-  while (cur != NULL) {
+  while (cur != nullptr) {
     delete cur->data;
     cur = cur->next;
   }
@@ -18,16 +18,16 @@ GroupState* GroupStateCache::get(const BulbId& id) {
 }
 
 GroupState* GroupStateCache::set(const BulbId& id, const GroupState& state) {
-  GroupCacheNode* pushedNode = NULL;
+  GroupCacheNode* pushedNode = nullptr;
   if (cache.size() >= maxSize) {
     pushedNode = cache.pop();
   }
 
   GroupState* cachedState = getInternal(id);
 
-  if (cachedState == NULL) {
-    if (pushedNode == NULL) {
-      GroupCacheNode* newNode = new GroupCacheNode(id, state);
+  if (cachedState == nullptr) {
+    if (pushedNode == nullptr) {
+      const auto newNode = new GroupCacheNode(id, state);
       cachedState = &newNode->state;
       cache.unshift(newNode);
     } else {
@@ -43,7 +43,7 @@ GroupState* GroupStateCache::set(const BulbId& id, const GroupState& state) {
   return cachedState;
 }
 
-BulbId GroupStateCache::getLru() {
+BulbId GroupStateCache::getLru() const {
   GroupCacheNode* node = cache.getLast();
   return node->id;
 }
@@ -59,7 +59,7 @@ ListNode<GroupCacheNode*>* GroupStateCache::getHead() {
 GroupState* GroupStateCache::getInternal(const BulbId& id) {
   ListNode<GroupCacheNode*>* cur = cache.getHead();
 
-  while (cur != NULL) {
+  while (cur != nullptr) {
     if (cur->data->id == id) {
       GroupState* result = &cur->data->state;
       cache.spliceToFront(cur);
@@ -68,5 +68,5 @@ GroupState* GroupStateCache::getInternal(const BulbId& id) {
     cur = cur->next;
   }
 
-  return NULL;
+  return nullptr;
 }

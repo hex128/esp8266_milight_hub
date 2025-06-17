@@ -15,11 +15,11 @@ V6CommandHandler* V6CommandHandler::ALL_HANDLERS[] = {
 const size_t V6CommandHandler::NUM_HANDLERS = size(ALL_HANDLERS);
 
 bool V6CommandHandler::handleCommand(MiLightClient* client,
-  uint16_t deviceId,
-  uint8_t group,
-  uint8_t commandType,
-  uint32_t command,
-  uint32_t commandArg)
+  const uint16_t deviceId,
+  const uint8_t group,
+  const uint8_t commandType,
+  const uint32_t command,
+  const uint32_t commandArg)
 {
   client->prepare(&remoteConfig, deviceId, group);
 
@@ -39,11 +39,11 @@ bool V6CommandHandler::handleCommand(MiLightClient* client,
 }
 
 bool V6CommandDemuxer::handleCommand(MiLightClient* client,
-  uint16_t deviceId,
-  uint8_t group,
-  uint8_t commandType,
-  uint32_t command,
-  uint32_t commandArg)
+  const uint16_t deviceId,
+  const uint8_t group,
+  const uint8_t commandType,
+  const uint32_t command,
+  const uint32_t commandArg)
 {
   for (size_t i = 0; i < numHandlers; i++) {
     if (((handlers[i]->commandId & command) == handlers[i]->commandId)

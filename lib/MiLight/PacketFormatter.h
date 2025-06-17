@@ -2,14 +2,13 @@
 
 #include <Arduino.h>
 #include <inttypes.h>
-#include <functional>
 #include <MiLightRemoteType.h>
 #include <ArduinoJson.h>
 #include <GroupState.h>
 #include <GroupStateStore.h>
 #include <Settings.h>
 
-// Most packets sent is for CCT bulbs, which always includes 10 down commands
+// Most packets sent are for CCT bulbs, which always includes 10 down commands
 // and can include up to 10 up commands.  CCT packets are 7 bytes.
 //   (10 * 7) + (10 * 7) = 140
 #define PACKET_FORMATTER_BUFFER_SIZE 140
@@ -18,7 +17,7 @@ struct PacketStream {
   PacketStream();
 
   uint8_t* next();
-  bool hasNext();
+  bool hasNext() const;
 
   uint8_t* packetStream;
   size_t numPackets;
@@ -31,11 +30,11 @@ public:
   virtual ~PacketFormatter() = default;
   PacketFormatter(MiLightRemoteType deviceType, size_t packetLength, size_t maxPackets = 1);
 
-  // Ideally these would be constructor parameters.  We could accomplish this by
-  // wrapping PacketFormaters in a factory, as Settings and StateStore are not
+  // Ideally, these would be constructor parameters. We could achieve this by
+  // wrapping PacketFormatters in a factory, as Settings and StateStore are not
   // available at construction time.
   //
-  // For now, just rely on the user calling this method.
+  // For now, rely on the user calling this method.
   void initialize(GroupStateStore* stateStore, const Settings* settings);
 
   typedef void (PacketFormatter::*StepFunction)();
@@ -105,12 +104,12 @@ protected:
 
   void pushPacket();
 
-  // Get field into a desired state using only increment/decrement commands.  Do this by:
+  // Get a field into a desired state using only increment/decrement commands.  Do this by:
   //   1. Driving it down to its minimum value
   //   2. Applying the appropriate number of increase commands to get it to the desired
   //      value.
   // If the current state is already known, take that into account and apply the exact
-  // number of rpeeats for the appropriate command.
+  // number of repeats for the appropriate command.
   void valueByStepFunction(StepFunction increase, StepFunction decrease, uint8_t numSteps, uint8_t targetValue, int8_t knownValue = -1);
 
   virtual void initializePacket(uint8_t* packetStart) = 0;

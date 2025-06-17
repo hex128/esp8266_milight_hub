@@ -12,7 +12,7 @@ HomeAssistantDiscoveryClient::HomeAssistantDiscoveryClient(Settings& settings, M
   , mqttClient(mqttClient)
 { }
 
-void HomeAssistantDiscoveryClient::sendDiscoverableDevices(const std::map<String, GroupAlias>& aliases) {
+void HomeAssistantDiscoveryClient::sendDiscoverableDevices(const std::map<String, GroupAlias>& aliases) const {
 #ifdef MQTT_DEBUG
   Serial.printf_P(PSTR("HomeAssistantDiscoveryClient: Sending %d discoverable devices...\n"), aliases.size());
 #endif
@@ -22,23 +22,23 @@ void HomeAssistantDiscoveryClient::sendDiscoverableDevices(const std::map<String
   }
 }
 
-void HomeAssistantDiscoveryClient::removeOldDevices(const std::map<uint32_t, BulbId>& aliases) {
+void HomeAssistantDiscoveryClient::removeOldDevices(const std::map<uint32_t, BulbId>& aliases) const {
 #ifdef MQTT_DEBUG
   Serial.printf_P(PSTR("HomeAssistantDiscoveryClient: Removing %d discoverable devices...\n"), aliases.size());
 #endif
 
-  for (auto itr = aliases.begin(); itr != aliases.end(); ++itr) {
-    removeConfig(itr->second);
+  for (const auto &[fst, snd] : aliases) {
+    removeConfig(snd);
   }
 }
 
-void HomeAssistantDiscoveryClient::removeConfig(const BulbId& bulbId) {
+void HomeAssistantDiscoveryClient::removeConfig(const BulbId& bulbId) const {
   // Remove by publishing an empty message
   const String topic = buildTopic(bulbId);
   mqttClient->send(topic.c_str(), "", true);
 }
 
-void HomeAssistantDiscoveryClient::addConfig(const char* alias, const BulbId& bulbId) {
+void HomeAssistantDiscoveryClient::addConfig(const char* alias, const BulbId& bulbId) const {
   String topic = buildTopic(bulbId);
   DynamicJsonDocument config(1024);
 
@@ -85,10 +85,10 @@ void HomeAssistantDiscoveryClient::addConfig(const char* alias, const BulbId& bu
   config[GroupStateFieldNames::EFFECT] = true;
 
   // effect_list
-  JsonArray effects = config.createNestedArray(F("fx_list"));
+  const JsonArray effects = config.createNestedArray(F("fx_list"));
   effects.add(MiLightCommandNames::NIGHT_MODE);
 
-  // These bulbs support switching between rgb/white, and have a "white_mode" command
+  // These bulbs support switching between rgb/white and have a "white_mode" command
   switch (bulbId.deviceType) {
     case REMOTE_TYPE_FUT089:
     case REMOTE_TYPE_RGB_CCT:
@@ -99,8 +99,8 @@ void HomeAssistantDiscoveryClient::addConfig(const char* alias, const BulbId& bu
       break; //nothing
   }
 
-  // All bulbs except CCT have 9 modes.  FUT029 and RGB/FUT096 has 9 modes, but they
-  // are not selectable directly.  There are only "next mode" commands.
+  // All bulbs except CCT have 9 modes. FUT029 and RGB/FUT096 have 9 modes, but they
+  // are not selectable directly. There are only "next mode" commands.
   switch (bulbId.deviceType) {
     case REMOTE_TYPE_CCT:
     case REMOTE_TYPE_RGB:

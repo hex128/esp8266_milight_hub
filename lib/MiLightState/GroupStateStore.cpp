@@ -10,7 +10,7 @@ GroupStateStore::GroupStateStore(const size_t maxSize, const size_t flushRate)
 GroupState* GroupStateStore::get(const BulbId& id) {
   GroupState* state = cache.get(id);
 
-  if (state == NULL) {
+  if (state == nullptr) {
 #if STATE_DEBUG
     printf(
       "Couldn't fetch state for 0x%04X / %d / %s in the cache, getting it from persistence\n",
@@ -24,11 +24,11 @@ GroupState* GroupStateStore::get(const BulbId& id) {
 
     const MiLightRemoteConfig* remoteConfig = MiLightRemoteConfig::fromType(id.deviceType);
 
-    if (remoteConfig == NULL) {
-      return NULL;
+    if (remoteConfig == nullptr) {
+      return nullptr;
     }
 
-    persistence.get(id, loadedState);
+    GroupStatePersistence::get(id, loadedState);
     state = cache.set(id, loadedState);
   }
 
@@ -36,7 +36,7 @@ GroupState* GroupStateStore::get(const BulbId& id) {
 }
 
 GroupState* GroupStateStore::get(const uint16_t deviceId, const uint8_t groupId, const MiLightRemoteType deviceType) {
-  BulbId bulbId(deviceId, groupId, deviceType);
+  const BulbId bulbId(deviceId, groupId, deviceType);
   return get(bulbId);
 }
 
@@ -44,8 +44,8 @@ GroupState* GroupStateStore::get(const uint16_t deviceId, const uint8_t groupId,
 //
 // Notes:
 //
-// * For device types with groups, group 0 is a "virtual" group.  All devices paired with the same ID will
-//   respond to group 0.  When state for an individual (i.e., != 0) group is changed, the state for
+// * For device types with groups, group 0 is a "virtual" group. All devices paired with the same ID will
+//   respond to group 0. When the state for an individual (i.e.,= 0) group is changed, the state for
 //   group 0 becomes out of sync and should be cleared.
 //
 // * If id.groupId == 0, will iterate across all groups and individually save each group (recursively)
@@ -80,14 +80,14 @@ GroupState* GroupStateStore::set(const BulbId &id, const GroupState& state) {
 }
 
 GroupState* GroupStateStore::set(const uint16_t deviceId, const uint8_t groupId, const MiLightRemoteType deviceType, const GroupState& state) {
-  BulbId bulbId(deviceId, groupId, deviceType);
+  const BulbId bulbId(deviceId, groupId, deviceType);
   return set(bulbId, state);
 }
 
 void GroupStateStore::clear(const BulbId& bulbId) {
   GroupState* state = get(bulbId);
 
-  if (state != NULL) {
+  if (state != nullptr) {
     state->initFields();
     state->patch(GroupState::defaultState(bulbId.deviceType));
   }
@@ -113,8 +113,8 @@ bool GroupStateStore::flush() {
   ListNode<GroupCacheNode*>* curr = cache.getHead();
   bool anythingFlushed = false;
 
-  while (curr != NULL && curr->data->state.isDirty() && !anythingFlushed) {
-    persistence.set(curr->data->id, curr->data->state);
+  while (curr != nullptr && curr->data->state.isDirty() && !anythingFlushed) {
+    GroupStatePersistence::set(curr->data->id, curr->data->state);
     curr->data->state.clearDirty();
 
 #ifdef STATE_DEBUG
@@ -132,7 +132,7 @@ bool GroupStateStore::flush() {
   }
 
   while (evictedIds.size() > 0 && !anythingFlushed) {
-    persistence.clear(evictedIds.shift());
+    GroupStatePersistence::clear(evictedIds.shift());
     anythingFlushed = true;
   }
 
@@ -140,7 +140,7 @@ bool GroupStateStore::flush() {
 }
 
 void GroupStateStore::limitedFlush() {
-  unsigned long now = millis();
+  const unsigned long now = millis();
 
   if ((lastFlush + flushRate) < now) {
     if (flush()) {

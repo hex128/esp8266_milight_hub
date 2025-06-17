@@ -1,7 +1,6 @@
 #include <V5MiLightUdpServer.h>
-#include <CctPacketFormatter.h>
 
-void V5MiLightUdpServer::handlePacket(uint8_t* packet, size_t packetSize) {
+void V5MiLightUdpServer::handlePacket(uint8_t* packet, const size_t packetSize) {
   if (packetSize == 2 || packetSize == 3) {
     handleCommand(packet[0], packet[1]);
   } else {
@@ -10,7 +9,7 @@ void V5MiLightUdpServer::handlePacket(uint8_t* packet, size_t packetSize) {
   }
 }
 
-void V5MiLightUdpServer::handleCommand(uint8_t command, uint8_t commandArg) {
+void V5MiLightUdpServer::handleCommand(const uint8_t command, const uint8_t commandArg) {
   // On/off for RGBW
   if (command >= UDP_RGBW_GROUP_1_ON && command <= UDP_RGBW_GROUP_4_OFF) {
     const MiLightStatus status = (command % 2) == 1 ? ON : OFF;
@@ -28,8 +27,14 @@ void V5MiLightUdpServer::handleCommand(uint8_t command, uint8_t commandArg) {
 
     this->lastGroup = groupId;
   // Set night_mode for RGBW
- } else if (command == UDP_RGBW_GROUP_ALL_NIGHT || command == UDP_RGBW_GROUP_1_NIGHT || command == UDP_RGBW_GROUP_2_NIGHT || command == UDP_RGBW_GROUP_3_NIGHT || command == UDP_RGBW_GROUP_4_NIGHT) {
-    uint8_t groupId = (command - UDP_RGBW_GROUP_1_NIGHT + 2)/2;
+  } else if (
+    command == UDP_RGBW_GROUP_ALL_NIGHT ||
+    command == UDP_RGBW_GROUP_1_NIGHT ||
+    command == UDP_RGBW_GROUP_2_NIGHT ||
+    command == UDP_RGBW_GROUP_3_NIGHT ||
+    command == UDP_RGBW_GROUP_4_NIGHT
+  ) {
+    uint8_t groupId = (command - UDP_RGBW_GROUP_1_NIGHT + 2) / 2;
     if (command == UDP_RGBW_GROUP_ALL_NIGHT) {
       groupId = 0;
     }
@@ -84,9 +89,7 @@ void V5MiLightUdpServer::handleCommand(uint8_t command, uint8_t commandArg) {
       return;
     }
 
-    uint8_t onOffGroup = CctPacketFormatter::cctCommandIdToGroup(command);
-
-    if (onOffGroup != 255) {
+    if (const uint8_t onOffGroup = CctPacketFormatter::cctCommandIdToGroup(command); onOffGroup != 255) {
       client->prepare(&FUT007Config, deviceId, onOffGroup);
       // Night mode commands are same as off commands with MSB set
       if ((command & 0x80) == 0x80) {
@@ -129,6 +132,6 @@ void V5MiLightUdpServer::handleCommand(uint8_t command, uint8_t commandArg) {
   }
 }
 
-void V5MiLightUdpServer::pressButton(uint8_t button) {
+void V5MiLightUdpServer::pressButton(const uint8_t button) const {
   client->command(button, 0);
 }

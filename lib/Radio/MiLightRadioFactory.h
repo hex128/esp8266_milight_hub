@@ -15,7 +15,7 @@
 class MiLightRadioFactory {
 public:
 
-  virtual ~MiLightRadioFactory() { };
+  virtual ~MiLightRadioFactory() = default;
   virtual std::shared_ptr<MiLightRadio> create(const MiLightRadioConfig& config) = 0;
 
   static std::shared_ptr<MiLightRadioFactory> fromSettings(const Settings& settings);

@@ -1,6 +1,6 @@
 #include <PacketFormatter.h>
 
-static uint8_t* PACKET_BUFFER = new uint8_t[PACKET_FORMATTER_BUFFER_SIZE];
+static auto PACKET_BUFFER = new uint8_t[PACKET_FORMATTER_BUFFER_SIZE];
 
 PacketStream::PacketStream()
     : packetStream(PACKET_BUFFER),
@@ -9,7 +9,7 @@ PacketStream::PacketStream()
       currentPacket(0)
 { }
 
-bool PacketStream::hasNext() {
+bool PacketStream::hasNext() const {
   return currentPacket < numPackets;
 }
 
@@ -24,7 +24,10 @@ PacketFormatter::PacketFormatter(const MiLightRemoteType deviceType, const size_
     packetLength(packetLength),
     numPackets(0),
     currentPacket(nullptr),
-    held(false)
+    held(false),
+    deviceId(0),
+    groupId(0),
+    sequenceNum(0)
 {
   packetStream.packetLength = packetLength;
 }
@@ -109,7 +112,7 @@ void PacketFormatter::valueByStepFunction(const StepFunction increase, const Ste
   StepFunction fn;
   size_t numCommands = 0;
 
-  // If current value is not known, drive down to minimum value.  Then we can assume that we
+  // If the current value is not known, drive down to the minimum value. Then we can assume that we
   // know the state (it'll be 0).
   if (knownValue == -1) {
     for (size_t i = 0; i < numSteps; i++) {
@@ -151,7 +154,7 @@ void PacketFormatter::pushPacket() {
     finalizePacket(currentPacket);
   }
 
-  // Make sure there's enough buffer to add another packet.
+  // Make sure there are enough buffers to add another packet.
   if ((currentPacket + packetLength) >= PACKET_BUFFER + PACKET_FORMATTER_BUFFER_SIZE) {
     Serial.println(F("ERROR: packet buffer full!  Cannot buffer a new packet.  THIS IS A BUG!"));
     return;

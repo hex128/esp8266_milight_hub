@@ -30,7 +30,7 @@ private:
   size_t droppedPackets;
 
   std::shared_ptr<QueuedPacket> checkoutPacket();
-  void checkinPacket(std::shared_ptr<QueuedPacket> packet);
+  static void checkinPacket(std::shared_ptr<QueuedPacket> packet);
 
   LinkedList<std::shared_ptr<QueuedPacket>> queue;
 };

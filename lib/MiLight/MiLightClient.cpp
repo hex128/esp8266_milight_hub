@@ -1,5 +1,4 @@
 #include <MiLightClient.h>
-#include <MiLightRadioConfig.h>
 #include <Arduino.h>
 #include <Units.h>
 #include <TokenIterator.h>
@@ -34,14 +33,14 @@ const char* MiLightClient::FIELD_ORDERINGS[] = {
 const std::map<const char*, std::function<void(MiLightClient*, JsonVariant)>, MiLightClient::cmp_str> MiLightClient::FIELD_SETTERS = {
   {
     GroupStateFieldNames::STATUS,
-    [](MiLightClient* client, const JsonVariant val) {
+    [](const MiLightClient* client, const JsonVariant val) {
       client->updateStatus(parseMilightStatus(val));
     }
   },
   {GroupStateFieldNames::LEVEL, &MiLightClient::updateBrightness},
   {
     GroupStateFieldNames::BRIGHTNESS,
-    [](MiLightClient* client, const uint16_t arg) {
+    [](const MiLightClient* client, const uint16_t arg) {
       client->updateBrightness(Units::rescale<uint16_t, uint16_t>(arg, 100, 255));
     }
   },
@@ -51,7 +50,7 @@ const std::map<const char*, std::function<void(MiLightClient*, JsonVariant)>, Mi
   {GroupStateFieldNames::TEMPERATURE, &MiLightClient::updateTemperature},
   {
     GroupStateFieldNames::COLOR_TEMP,
-    [](MiLightClient* client, const uint16_t arg) {
+    [](const MiLightClient* client, const uint16_t arg) {
       client->updateTemperature(Units::miredsToWhiteVal(arg, 100));
     }
   },
@@ -334,8 +333,8 @@ void MiLightClient::update(const JsonObject object) {
     // the same command.  This avoids the need to make arbitrary calls on what the
     // behavior should be.
     else if (!currentState->isSetState() || !currentState->isOn()) {
-      // If a brightness is defined, we'll want to transition to that.  Status
-      // transitions only ramp up/down to the max/min.  Otherwise, just turn the bulb on
+      // If brightness is defined, we'll want to transition to that.  Status
+      // transitions only ramp up/down to the max/min. Otherwise, turn the bulb on
       // and let field transitions handle the rest.
       if (!isBrightnessDefined) {
         handleTransition(GroupStateField::STATUS, status, transition, 0);
@@ -357,15 +356,15 @@ void MiLightClient::update(const JsonObject object) {
       const JsonVariant value = object[fieldName];
 
       if (handler != FIELD_SETTERS.end()) {
-        // No transition -- set field directly
+        // No transition -- set the field directly
         if (transition == 0) {
           handler->second(this, value);
         } else {
           const GroupStateField field = GroupStateFieldHelpers::getFieldByName(fieldName);
 
-          if (   !GroupStateFieldHelpers::isBrightnessField(field)  // If field isn't brightness
+          if (   !GroupStateFieldHelpers::isBrightnessField(field)  // If the field isn't brightness
                || parsedStatus == STATUS_UNDEFINED                  // or if there was not a status field
-               || currentState->isOn()                              // or if bulb was already on
+               || currentState->isOn()                              // or if the bulb was already on
           ) {
             handleTransition(field, value, transition);
           }
@@ -444,8 +443,8 @@ void MiLightClient::handleCommand(const JsonVariant command) const {
   } else if (cmdName == MiLightCommandNames::TOGGLE) {
     this->toggleStatus();
   } else if (cmdName == MiLightCommandNames::TRANSITION) {
-    StaticJsonDocument<100> fakedoc;
-    this->handleTransition(args, fakedoc);
+    StaticJsonDocument<100> obj;
+    this->handleTransition(args, obj);
   }
 }
 
@@ -554,7 +553,7 @@ bool MiLightClient::handleTransition(const JsonObject args, JsonDocument& respon
       break;
   }
 
-  // Color can be decomposed into hue/saturation and these can be transitioned separately
+  // Color can be decomposed into hue/saturation, and these can be transitioned separately
   if (field == GroupStateField::COLOR) {
     const ParsedColor _startValue = startValue.isNull()
       ? currentState->getColor()

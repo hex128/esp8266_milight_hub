@@ -3,27 +3,18 @@
 #include <MiLightRadioConfig.h>
 #include <PacketFormatter.h>
 
-#include <RgbwPacketFormatter.h>
-#include <RgbPacketFormatter.h>
-#include <RgbCctPacketFormatter.h>
-#include <CctPacketFormatter.h>
-#include <FUT089PacketFormatter.h>
-#include <FUT091PacketFormatter.h>
-#include <FUT020PacketFormatter.h>
-#include <PacketFormatter.h>
-
 class MiLightRemoteConfig {
 public:
   MiLightRemoteConfig(
     PacketFormatter* packetFormatter,
     MiLightRadioConfig& radioConfig,
     const MiLightRemoteType type,
-    const String &name,
+    String name,
     const size_t numGroups
   ) : packetFormatter(packetFormatter),
       radioConfig(radioConfig),
       type(type),
-      name(name),
+      name(std::move(name)),
       numGroups(numGroups)
   { }
 

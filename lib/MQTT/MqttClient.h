@@ -4,7 +4,6 @@
 #include <Settings.h>
 #include <PubSubClient.h>
 #include <WiFiClient.h>
-#include <MiLightRadioConfig.h>
 #include <ESPId.h>
 #include <map>
 #include <pgmspace.h>
@@ -61,7 +60,7 @@ public:
   MqttConnectionStatus getConnectionStatus();
   const __FlashStringHelper* getConnectionStatusString();
 
-  String bindTopicString(const String& topicPattern, const BulbId& bulbId) const;
+  [[nodiscard]] String bindTopicString(const String& topicPattern, const BulbId& bulbId) const;
 
 private:
   WiFiClient tcpClient;

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstddef>
-#include <inttypes.h>
 #include <MiLightRemoteType.h>
 #include <MiLightStatus.h>
 #include <MiLightRadioConfig.h>
@@ -108,50 +106,50 @@ public:
   inline bool setMqttDirty();
   bool clearMqttDirty();
 
-  // Clears all of the fields in THIS GroupState that have different values
+  // Clears all the fields in THIS GroupState that have different values
   // than the provided group state.
   bool clearNonMatchingFields(const GroupState& other);
 
   // Patches this state with ONLY the set fields in the other.
   void patch(const GroupState& other);
 
-  // Patches this state with the fields defined in the JSON state.  Returns
+  // Patches this state with the fields defined in the JSON state. Returns
   // true if there were any changes.
   bool patch(JsonObject state);
 
-  // It's a little weird to need to pass in a BulbId here.  The purpose is to
-  // support fields like DEVICE_ID, which aren't otherweise available to the
-  // state in this class.  The alternative is to have every GroupState object
+  // It's a little weird to need to pass in a BulbId here. The purpose is to
+  // support fields like DEVICE_ID, which aren't otherwise available to the
+  // state in this class. The alternative is to have every GroupState object
   // keep a reference to its BulbId, which feels too heavy-weight.
   void applyField(JsonObject state, const BulbId& bulbId, GroupStateField field) const;
   void applyState(JsonObject state, const BulbId& bulbId, const std::vector<GroupStateField>& fields) const;
 
   // Attempt to keep track of increment commands in such a way that we can
-  // know what state it's in.  When we get an increment command (like "increase
+  // know what state it's in. When we get an increment command (like "increase
   // brightness"):
-  //   1. If there is no value in the scratch state: assume real state is in
-  //      the furthest value from the direction of the command.  For example,
+  //   1. If there is no value in the scratch state: assume the real state is in
+  //      the furthest value from the direction of the command. For example,
   //      if we get "increase," assume the value was 0.
   //   2. If there is a value in the scratch state, apply the command to it.
   //      For example, if we get "decrease," subtract 1 from the scratch.
-  //   3. When scratch reaches a known extreme (either min or max), set the
+  //   3. When a scratch reaches a known extreme (either min or max), set the
   //      persistent field to that value
   //   4. If there is already a known value for the state, apply it rather
-  //      than messing with scratch state.
+  //      than messing with the scratch state.
   //
-  // returns true if a (real, not scratch) state change was made
+  // Returns true if a (real, not scratch) state change was made
   bool applyIncrementCommand(GroupStateField field, IncrementDirection dir);
 
   // Helpers that convert raw state values
 
-  // Return true if hue is set.  If saturation is not set, will assume 100.
+  // Return true if hue is set. If saturation is not set, will assume 100.
   bool isSetColor() const;
   ParsedColor getColor() const;
 
   void load(Stream& stream);
   void dump(Stream& stream) const;
 
-  void debugState(char const *debugMessage) const;
+  static void debugState(char const *debugMessage);
 
   static const GroupState& defaultState(MiLightRemoteType remoteType);
   static GroupState initDefaultRgbState();
@@ -159,7 +157,7 @@ public:
   static bool isPhysicalField(GroupStateField field);
 
 private:
-  static const size_t DATA_LONGS = 2;
+  static constexpr size_t DATA_LONGS = 2;
   union StateData {
     uint32_t rawData[DATA_LONGS];
     struct Fields {
@@ -190,7 +188,7 @@ private:
     } fields;
   };
 
-  // Transient scratchpad that is never persisted.  Used to track and compute state for
+  // Transient scratchpad that is never persisted. Used to track and compute state for
   // protocols that only have increment commands (like CCT).
   union TransientData {
     uint16_t rawData;
@@ -206,13 +204,13 @@ private:
   StateData state;
   TransientData scratchpad;
 
-  // State is constructed from individual command packets.  A command packet is parsed in
-  // isolation, and the result is patched onto previous state.  There are a few cases where
+  // State is constructed from individual command packets. A command packet is parsed in
+  // isolation, and the result is patched onto the previous state. There are a few cases where
   // it's necessary to know some things from the previous state, so we keep a reference to
   // it here.
   const GroupState* previousState;
 
-  void applyColor(JsonObject state, uint8_t r, uint8_t g, uint8_t b) const;
+  static void applyColor(JsonObject state, uint8_t r, uint8_t g, uint8_t b);
   void applyColor(JsonObject state) const;
   // Apply OpenHAB-style color, e.g., {"color":"0,0,0"}
   void applyOhColor(JsonObject state) const;

@@ -46,28 +46,28 @@ class LT8900MiLightRadio final : public MiLightRadio {
     int begin() override;
     bool available() override;
     int read(uint8_t frame[], size_t &frame_length) override;
-    int write(uint8_t frame[], size_t frame_length) override;
+    size_t write(uint8_t frame[], size_t frame_length) override;
     int resend() override;
     int configure() override;
     const MiLightRadioConfig& config() override;
 
   private:
 
-    void vInitRadioModule();
-    void vSetSyncWord(uint16_t syncWord3, uint16_t syncWord2, uint16_t syncWord1, uint16_t syncWord0);
-    uint16_t uiReadRegister(uint8_t reg);
-    void regWrite16(byte ADDR, byte V1, byte V2, byte WAIT);
-    uint8_t uiWriteRegister(uint8_t reg, uint16_t data);
+    void vInitRadioModule() const;
+    void vSetSyncWord(uint16_t syncWord3, uint16_t syncWord2, uint16_t syncWord1, uint16_t syncWord0) const;
+    uint16_t uiReadRegister(uint8_t reg) const;
+    void regWrite16(byte ADDR, byte V1, byte V2, byte WAIT) const;
+    uint8_t uiWriteRegister(uint8_t reg, uint16_t data) const;
 
-    bool bAvailablePin();
+    bool bAvailablePin() const;
     bool bAvailableRegister();
     void vStartListening(uint uiChannelToListenTo);
     void vResumeRX();
     int iReadRXBuffer(uint8_t *buffer, size_t maxBuffer);
     void vSetChannel(uint8_t channel);
-    void vGenericSendPacket(int iMode, int iLength, byte *pbyFrame, byte byChannel );
-    bool bCheckRadioConnection();
-    bool sendPacket(uint8_t *data, size_t packetSize,byte byChannel);
+    void vGenericSendPacket(int iMode, int iLength, byte *pbyFrame, byte byChannel);
+    bool bCheckRadioConnection() const;
+    bool sendPacket(const uint8_t *data, size_t packetSize,byte byChannel) const;
 
     byte _pin_pktflag;
     byte _csPin;
@@ -76,10 +76,10 @@ class LT8900MiLightRadio final : public MiLightRadio {
     const MiLightRadioConfig& _config;
 
     uint8_t _channel;
-    uint8_t _packet[10];
-    uint8_t _out_packet[10];
+    uint8_t _packet[10]{};
+    uint8_t _out_packet[10]{};
     bool _waiting;
-    int _dupes_received;
+    int _dupes_received{};
     size_t _currentPacketLen;
     size_t _currentPacketPos;
 };

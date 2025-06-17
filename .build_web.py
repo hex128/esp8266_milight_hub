@@ -1,26 +1,13 @@
-import os
-import sys
-from subprocess import check_call, CalledProcessError
-
 WEB_DIR = "web2"
 
-try:
-    os.chdir(WEB_DIR)
-    print("Building Web UI...")
-    if check_call(["npm", "install"]) != 0:
-        print("Error installing npm packages", file=sys.stderr)
-        exit(1)
-    if check_call(["npm", "run", "build"]) != 0:
-        print("Error building Web UI", file=sys.stderr)
-        exit(1)
-except FileNotFoundError as e:
-    print("File not found during build:", e, file=sys.stderr)
-    exit(1)
-except OSError as e:
-    print("Encountered OSError while building Web UI:", e, file=sys.stderr)
-    if getattr(e, 'filename', None):
-        print("Filename:", e.filename, file=sys.stderr)
-    exit(1)
-except CalledProcessError as e:
-    print("Encountered CalledProcessError while building Web UI:", e, file=sys.stderr)
-    exit(1)
+Import("env")
+
+import subprocess
+# Only run if we're actually building
+if any(t in COMMAND_LINE_TARGETS for t in ["build", "upload", "program", "uploadfs"]):
+    try:
+        subprocess.check_call(["npm", "install"], cwd=WEB_DIR)
+        subprocess.check_call(["npm", "run", "build"], cwd=WEB_DIR)
+    except subprocess.CalledProcessError as e:
+        print("Error during npm build process.")
+        env.Exit(1)

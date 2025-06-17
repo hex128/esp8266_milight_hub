@@ -56,10 +56,8 @@ void Settings::updateGatewayConfigs(const JsonArray arr) {
   gatewayConfigs.clear();
 
   for (size_t i = 0; i < arr.size(); i++) {
-    JsonArray params = arr[i];
-
-    if (params.size() == 3) {
-      std::shared_ptr<GatewayConfig> ptr = std::make_shared<GatewayConfig>(parseInt<uint16_t>(params[0]), params[1], params[2]);
+    if (JsonArray params = arr[i]; params.size() == 3) {
+      auto ptr = std::make_shared<GatewayConfig>(parseInt<uint16_t>(params[0]), params[1], params[2]);
       gatewayConfigs.push_back(std::move(ptr));
     } else {
       Serial.print(F("Settings - skipped parsing gateway ports settings for element #"));

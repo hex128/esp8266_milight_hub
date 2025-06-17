@@ -14,12 +14,12 @@ struct GroupCacheNode {
 
 class GroupStateCache {
 public:
-  GroupStateCache(size_t maxSize);
+  explicit GroupStateCache(size_t maxSize);
   ~GroupStateCache();
 
   GroupState* get(const BulbId& id);
   GroupState* set(const BulbId& id, const GroupState& state);
-  BulbId getLru();
+  BulbId getLru() const;
   bool isFull() const;
   ListNode<GroupCacheNode*>* getHead();
 

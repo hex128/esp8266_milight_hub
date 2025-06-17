@@ -2,8 +2,8 @@
 
 bool V6RgbwCommandHandler::handlePreset(
     MiLightClient* client,
-    uint8_t commandLsb,
-    uint32_t commandArg)
+    const uint8_t commandLsb,
+    const uint32_t commandArg)
 {
   if (commandLsb == 0) {
     client->updateColorRaw(commandArg >> 24);
@@ -20,8 +20,8 @@ bool V6RgbwCommandHandler::handlePreset(
 
 bool V6RgbwCommandHandler::handleCommand(
     MiLightClient* client,
-    uint32_t command,
-    uint32_t commandArg)
+    const uint32_t command,
+    const uint32_t commandArg)
 {
   const uint8_t cmd = command & 0x7F;
   const uint8_t arg = commandArg >> 24;
@@ -59,13 +59,16 @@ bool V6RgbwCommandHandler::handleCommand(
     }
 
     return true;
-  } else if (cmd == V2_RGBW_COLOR_PREFIX) {
+  }
+  if (cmd == V2_RGBW_COLOR_PREFIX) {
     client->updateColorRaw(arg);
     return true;
-  } else if (cmd == V2_RGBW_BRIGHTNESS_PREFIX) {
+  }
+  if (cmd == V2_RGBW_BRIGHTNESS_PREFIX) {
     client->updateBrightness(arg);
     return true;
-  } else if (cmd == V2_RGBW_MODE_PREFIX) {
+  }
+  if (cmd == V2_RGBW_MODE_PREFIX) {
     client->updateMode(arg);
     return true;
   }

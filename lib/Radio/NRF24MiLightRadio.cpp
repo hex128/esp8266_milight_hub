@@ -1,4 +1,4 @@
-// Adapated from code from henryk
+// Adapted from code from henryk
 
 #include <PL1167_nRF24.h>
 #include <NRF24MiLightRadio.h>
@@ -15,8 +15,11 @@ NRF24MiLightRadio::NRF24MiLightRadio(
     listenChannelIx(static_cast<size_t>(listenChannel)),
     _pl1167(PL1167_nRF24(rf24)),
     _config(config),
-    _waiting(false)
-{ }
+    _prev_packet_id(0),
+    _packet{},
+    _out_packet{},
+    _waiting(false),
+    _dupes_received(0) {}
 
 int NRF24MiLightRadio::begin() {
   int retval = _pl1167.open();
@@ -107,7 +110,7 @@ int NRF24MiLightRadio::read(uint8_t frame[], size_t &frame_length)
   return _packet[0];
 }
 
-int NRF24MiLightRadio::write(uint8_t frame[], size_t frame_length) {
+size_t NRF24MiLightRadio::write(uint8_t frame[], const size_t frame_length) {
   if (frame_length > sizeof(_out_packet) - 1) {
     return -1;
   }
@@ -115,17 +118,16 @@ int NRF24MiLightRadio::write(uint8_t frame[], size_t frame_length) {
   memcpy(_out_packet + 1, frame, frame_length);
   _out_packet[0] = frame_length;
 
-  int retval = resend();
-  if (retval < 0) {
+  if (const int retval = resend(); retval < 0) {
     return retval;
   }
   return frame_length;
 }
 
 int NRF24MiLightRadio::resend() {
-  for (std::vector<RF24Channel>::const_iterator it = channels.begin(); it != channels.end(); ++it) {
-    size_t channelIx = static_cast<uint8_t>(*it);
-    uint8_t channel = _config.channels[channelIx];
+  for (auto it = channels.begin(); it != channels.end(); ++it) {
+    const size_t channelIx = static_cast<uint8_t>(*it);
+    const uint8_t channel = _config.channels[channelIx];
 
     _pl1167.writeFIFO(_out_packet, _out_packet[0] + 1);
     _pl1167.transmit(channel);

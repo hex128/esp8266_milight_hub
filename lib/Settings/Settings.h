@@ -189,12 +189,12 @@ public:
 
   ~Settings() = default;
 
-  bool isAuthenticationEnabled() const;
-  const String& getUsername() const;
-  const String& getPassword() const;
+  [[nodiscard]] bool isAuthenticationEnabled() const;
+  [[nodiscard]] const String& getUsername() const;
+  [[nodiscard]] const String& getPassword() const;
 
-  bool isAutoRestartEnabled() const;
-  size_t getAutoRestartPeriod() const;
+  [[nodiscard]] bool isAutoRestartEnabled() const;
+  [[nodiscard]] size_t getAutoRestartPeriod() const;
 
   static bool load(Settings& settings);
   static bool loadAliases(Settings& settings);
@@ -207,9 +207,9 @@ public:
   void serialize(Print& stream, bool prettyPrint = false) const;
   void updateDeviceIds(JsonArray arr);
   void updateGatewayConfigs(JsonArray arr);
-  void patch(JsonObject obj);
+  void patch(JsonObject parsedSettings);
   String mqttServer();
-  uint16_t mqttPort() const;
+  [[nodiscard]] uint16_t mqttPort() const;
   std::map<String, GroupAlias>::const_iterator findAlias(MiLightRemoteType deviceType, uint16_t deviceId, uint8_t groupId);
   std::map<String, GroupAlias>::const_iterator findAliasById(size_t id);
   void addAlias(const char* alias, const BulbId& bulbId);
@@ -275,7 +275,7 @@ protected:
   void dumpGroupIdAliases(JsonObject json) const;
 
   template <typename T>
-  void setIfPresent(JsonObject obj, const __FlashStringHelper* key, T& var) {
+  void setIfPresent(const JsonObject obj, const __FlashStringHelper* key, T& var) {
     if (obj.containsKey(key)) {
       JsonVariant val = obj[key];
 

@@ -1,8 +1,6 @@
 #pragma once
 
-#ifdef ARDUINO
-#include "Arduino.h"
-#else
+#ifndef ARDUINO
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +16,7 @@
 class NRF24MiLightRadio final : public MiLightRadio {
   public:
     NRF24MiLightRadio(
-      RF24& rf, 
+      RF24& rf24,
       const MiLightRadioConfig& config, 
       const std::vector<RF24Channel>& channels, 
       RF24Channel listenChannel
@@ -28,7 +26,7 @@ class NRF24MiLightRadio final : public MiLightRadio {
     bool available() override;
     int read(uint8_t frame[], size_t &frame_length) override;
     int dupesReceived();
-    int write(uint8_t frame[], size_t frame_length) override;
+    size_t write(uint8_t frame[], size_t frame_length) override;
     int resend() override;
     int configure() override;
     const MiLightRadioConfig& config() override;

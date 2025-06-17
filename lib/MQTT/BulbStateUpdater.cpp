@@ -17,9 +17,9 @@ void BulbStateUpdater::disable() {
   this->enabled = false;
 }
 
-void BulbStateUpdater::enqueueUpdate(const BulbId &bulbId, GroupState& groupState) {
+void BulbStateUpdater::enqueueUpdate(const BulbId &bulbId, [[maybe_unused]] GroupState& groupState) {
   staleGroups.push(bulbId);
-  //Remember time, when queue was added for debounce delay
+  // Remember time when queue was added for debouncing delay
   lastQueue = millis();
 
 }

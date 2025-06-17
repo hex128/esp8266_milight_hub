@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Arduino.h>
 #include <MiLightClient.h>
 #include <WiFiUdp.h>
 

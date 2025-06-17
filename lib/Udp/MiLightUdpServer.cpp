@@ -7,12 +7,14 @@
   #include <WiFi.h>
 #endif
 
-MiLightUdpServer::MiLightUdpServer(MiLightClient*& client, uint16_t port, uint16_t deviceId)
+MiLightUdpServer::MiLightUdpServer(MiLightClient*& client, const uint16_t port, const uint16_t deviceId)
   : client(client),
     port(port),
     deviceId(deviceId),
-    lastGroup(0)
-{ }
+    lastGroup(0),
+    packetBuffer{},
+    responseBuffer{}
+{}
 
 MiLightUdpServer::~MiLightUdpServer() {
   stop();
@@ -27,9 +29,7 @@ void MiLightUdpServer::stop() {
 }
 
 void MiLightUdpServer::handleClient() {
-  const size_t packetSize = socket.parsePacket();
-
-  if (packetSize) {
+  if (const size_t packetSize = socket.parsePacket()) {
     socket.read(packetBuffer, packetSize);
 
 #ifdef MILIGHT_UDP_DEBUG
@@ -44,12 +44,13 @@ void MiLightUdpServer::handleClient() {
   }
 }
 
-std::shared_ptr<MiLightUdpServer> MiLightUdpServer::fromVersion(uint8_t version, MiLightClient*& client, uint16_t port, uint16_t deviceId) {
+std::shared_ptr<MiLightUdpServer> MiLightUdpServer::fromVersion(const uint8_t version, MiLightClient*& client, uint16_t port, uint16_t deviceId) {
   if (version == 0 || version == 5) {
     return std::make_shared<V5MiLightUdpServer>(client, port, deviceId);
-  } else if (version == 6) {
+  }
+  if (version == 6) {
     return std::make_shared<V6MiLightUdpServer>(client, port, deviceId);
   }
 
-  return NULL;
+  return nullptr;
 }

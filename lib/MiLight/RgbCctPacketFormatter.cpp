@@ -41,11 +41,11 @@ void RgbCctPacketFormatter::updateColorRaw(const uint8_t value) {
 void RgbCctPacketFormatter::updateTemperature(const uint8_t value) {
   // Packet scale is [0x94, 0x92, .. 0, .., 0xCE, 0xCC]. Increments of 2.
   // From coolest to warmest.
-  const uint8_t cmdValue = tov2scale(value, RGB_CCT_KELVIN_REMOTE_END, 2);
+  const uint8_t cmdValue = toV2Scale(value, RGB_CCT_KELVIN_REMOTE_END, 2);
 
-  // when updating temperature, the bulb switches to white.  If we are not already
+  // When updating the temperature, the bulb switches to white. If we are not already
   // in white mode, that makes changing temperature annoying because the current hue/mode
-  // is lost.  So lookup our current bulb mode, and if needed, reset the hue/mode after
+  // is lost. Such a lookup our current bulb mode, and if needed, reset the hue/mode after
   // changing the temperature
   const GroupState* ourState = this->stateStore->get(this->deviceId, this->groupId, REMOTE_TYPE_RGB_CCT);
 
@@ -63,7 +63,7 @@ void RgbCctPacketFormatter::updateTemperature(const uint8_t value) {
   }
 }
 
-// update saturation.  This only works when in Color mode, so if not in color we switch to color,
+// Update saturation. This only works when in Color mode, so if not in color, we switch to color,
 // make the change, and switch back again.
 void RgbCctPacketFormatter::updateSaturation(const uint8_t value) {
    // look up our current mode
@@ -97,7 +97,7 @@ void RgbCctPacketFormatter::updateColorWhite() {
   const uint8_t value =
     ourState == nullptr
       ? 0
-      : tov2scale(ourState->getKelvin(), RGB_CCT_KELVIN_REMOTE_END, 2);
+      : toV2Scale(ourState->getKelvin(), RGB_CCT_KELVIN_REMOTE_END, 2);
 
   // issue command to set kelvin to prior value, which will drive to white
   command(RGB_CCT_KELVIN, value);
@@ -141,7 +141,7 @@ BulbId RgbCctPacketFormatter::parsePacket(const uint8_t *packet, const JsonObjec
     const uint16_t hue = Units::rescale<uint16_t, uint16_t>(rescaledColor, 360, 255.0);
     result[GroupStateFieldNames::HUE] = hue;
   } else if (command == RGB_CCT_KELVIN) {
-    const uint8_t temperature = fromv2scale(arg, RGB_CCT_KELVIN_REMOTE_END, 2);
+    const uint8_t temperature = fromV2Scale(arg, RGB_CCT_KELVIN_REMOTE_END, 2);
     result[GroupStateFieldNames::COLOR_TEMP] = Units::whiteValToMireds(temperature, 100);
   // brightness == saturation
   } else if (command == RGB_CCT_BRIGHTNESS && arg >= (RGB_CCT_BRIGHTNESS_OFFSET - 15)) {

@@ -63,7 +63,7 @@ uint8_t V6MiLightUdpServer::SEARCH_RESPONSE[] = {
   0x39, 0x64, 0x30, 0x64, 0x01, 0x00,
   0x01,
   0x17, 0x63,  // this is 5987 in hex. specifying a different value seems to
-               // cause client to connect on a different port for some commands
+               // cause the client to connect on a different port for some commands
   0x00, 0x00, 0x05, 0x00, 0x09, 0x78,
   0x6C, 0x69, 0x6E, 0x6B, 0x5F, 0x64,
   0x65, 0x76, 0x07, 0x5B, 0xCD, 0x15
@@ -78,18 +78,18 @@ uint8_t V6MiLightUdpServer::OPEN_COMMAND_RESPONSE[] = {
 };
 
 V6MiLightUdpServer::~V6MiLightUdpServer() {
-  V6Session* cur = firstSession;
+  const V6Session* cur = firstSession;
 
-  while (cur != NULL) {
-    V6Session* next = cur->next;
+  while (cur != nullptr) {
+    const V6Session* next = cur->next;
     delete cur;
     cur = next;
   }
 }
 
 template <typename T>
-T V6MiLightUdpServer::readInt(uint8_t* packet) {
-  size_t numBytes = sizeof(T);
+T V6MiLightUdpServer::readInt(const uint8_t* packet) {
+  const size_t numBytes = sizeof(T);
   T value = 0;
 
   for (size_t i = 0; i < numBytes; i++) {
@@ -101,7 +101,7 @@ T V6MiLightUdpServer::readInt(uint8_t* packet) {
 
 template <typename T>
 uint8_t* V6MiLightUdpServer::writeInt(const T& value, uint8_t* packet) {
-  size_t numBytes = sizeof(T);
+  const size_t numBytes = sizeof(T);
 
   for (size_t i = 0; i < numBytes; i++) {
     packet[i] = (value >> (8 * (numBytes - i - 1))) & 0xFF;
@@ -113,7 +113,7 @@ uint8_t* V6MiLightUdpServer::writeInt(const T& value, uint8_t* packet) {
 uint16_t V6MiLightUdpServer::beginSession() {
   const uint16_t id = sessionId++;
 
-  V6Session* session = new V6Session(socket.remoteIP(), socket.remotePort(), id);
+  const auto session = new V6Session(socket.remoteIP(), socket.remotePort(), id);
   session->next = firstSession;
   firstSession = session;
 
@@ -125,7 +125,7 @@ uint16_t V6MiLightUdpServer::beginSession() {
     }
 
     delete cur->next;
-    cur->next = NULL;
+    cur->next = nullptr;
   } else {
     numSessions++;
   }
@@ -145,9 +145,9 @@ void V6MiLightUdpServer::handleSearch() {
 }
 
 void V6MiLightUdpServer::handleStartSession() {
-  size_t len = size(START_SESSION_RESPONSE);
+  const size_t len = size(START_SESSION_RESPONSE);
   uint8_t response[len];
-  uint16_t sessionId = beginSession();
+  const uint16_t sessionId = beginSession();
 
   memcpy(response, START_SESSION_RESPONSE, len);
   writeMacAddr(response + 7);
@@ -158,17 +158,17 @@ void V6MiLightUdpServer::handleStartSession() {
   sendResponse(sessionId, response, len);
 }
 
-bool V6MiLightUdpServer::sendResponse(uint16_t sessionId, uint8_t* responseBuffer, size_t responseSize) {
+bool V6MiLightUdpServer::sendResponse(const uint16_t sessionId, const uint8_t* responseBuffer, const size_t responseSize) {
   V6Session* session = firstSession;
 
-  while (session != NULL) {
+  while (session != nullptr) {
     if (session->sessionId == sessionId) {
       break;
     }
     session = session->next;
   }
 
-  if (session == NULL || session->sessionId != sessionId) {
+  if (session == nullptr || session->sessionId != sessionId) {
     Serial.print("Received request with untracked session ID: ");
     Serial.println(sessionId);
     return false;
@@ -185,8 +185,8 @@ bool V6MiLightUdpServer::sendResponse(uint16_t sessionId, uint8_t* responseBuffe
   return true;
 }
 
-bool V6MiLightUdpServer::handleOpenCommand(uint16_t sessionId) {
-  size_t len = size(OPEN_COMMAND_RESPONSE);
+bool V6MiLightUdpServer::handleOpenCommand(const uint16_t sessionId) {
+  const size_t len = size(OPEN_COMMAND_RESPONSE);
   uint8_t response[len];
   memcpy(response, OPEN_COMMAND_RESPONSE, len);
   writeMacAddr(response + 5);
@@ -195,16 +195,16 @@ bool V6MiLightUdpServer::handleOpenCommand(uint16_t sessionId) {
 }
 
 void V6MiLightUdpServer::handleCommand(
-  uint16_t sessionId,
-  uint8_t sequenceNum,
+  const uint16_t sessionId,
+  const uint8_t sequenceNum,
   uint8_t* cmd,
-  uint8_t group,
-  uint8_t checksum
+  const uint8_t group,
+  [[maybe_unused]] uint8_t checksum
 ) {
 
-  uint8_t cmdType = readInt<uint8_t>(cmd);
-  uint32_t cmdHeader = readInt<uint32_t>(cmd+1);
-  uint32_t cmdArg = readInt<uint32_t>(cmd+5);
+  auto cmdType = readInt<uint8_t>(cmd);
+  auto cmdHeader = readInt<uint32_t>(cmd+1);
+  auto cmdArg = readInt<uint32_t>(cmd+5);
 
 #ifdef MILIGHT_UDP_DEBUG
   printf("Command cmdType: %02X, cmdHeader: %08X, cmdArg: %08X\n", cmdType, cmdHeader, cmdArg);
@@ -226,7 +226,7 @@ void V6MiLightUdpServer::handleCommand(
   }
 
   if (handled) {
-    size_t len = size(COMMAND_RESPONSE);
+    const size_t len = size(COMMAND_RESPONSE);
     memcpy(responseBuffer, COMMAND_RESPONSE, len);
     responseBuffer[6] = sequenceNum;
 
@@ -244,8 +244,8 @@ void V6MiLightUdpServer::handleCommand(
 #endif
 }
 
-void V6MiLightUdpServer::handleHeartbeat(uint16_t sessionId) {
-  char header[] = { 0xD8, 0x00, 0x00, 0x00, 0x07 };
+void V6MiLightUdpServer::handleHeartbeat(const uint16_t sessionId) {
+  uint8_t header[] = { 0xD8, 0x00, 0x00, 0x00, 0x07 };
   memcpy(responseBuffer, header, size(header));
   writeMacAddr(responseBuffer + 5);
 
@@ -254,7 +254,12 @@ void V6MiLightUdpServer::handleHeartbeat(uint16_t sessionId) {
   sendResponse(sessionId, responseBuffer, 12);
 }
 
-bool V6MiLightUdpServer::matchesPacket(uint8_t* packet1, size_t packet1Len, uint8_t* packet2, size_t packet2Len) {
+bool V6MiLightUdpServer::matchesPacket(
+  const uint8_t* packet1,
+  const size_t packet1Len,
+  const uint8_t* packet2,
+  const size_t packet2Len
+) {
   return packet2Len >= packet1Len && memcmp(packet1, packet2, packet1Len) == 0;
 }
 
@@ -266,12 +271,12 @@ void V6MiLightUdpServer::handlePacket(uint8_t* packet, size_t packetSize) {
   if (MATCHES_PACKET(START_SESSION_COMMAND)) {
     handleStartSession();
   } else if (MATCHES_PACKET(HEARTBEAT_HEADER) || MATCHES_PACKET(HEARTBEAT_HEADER2)) {
-    uint16_t sessionId = readInt<uint16_t>(packet+5);
+    auto sessionId = readInt<uint16_t>(packet+5);
     handleHeartbeat(sessionId);
   } else if (MATCHES_PACKET(SEARCH_COMMAND)) {
     handleSearch();
   } else if (packetSize == 22 && MATCHES_PACKET(COMMAND_HEADER)) {
-    uint16_t sessionId = readInt<uint16_t>(packet+5);
+    auto sessionId = readInt<uint16_t>(packet+5);
     uint8_t sequenceNum = packet[8];
     uint8_t* cmd = packet+10;
     uint8_t group = packet[19];
@@ -287,7 +292,7 @@ void V6MiLightUdpServer::handlePacket(uint8_t* packet, size_t packetSize) {
   }
 }
 
-void V6MiLightUdpServer::writeMacAddr(uint8_t* packet) {
+void V6MiLightUdpServer::writeMacAddr(uint8_t* packet) const {
   memset(packet, 0, 6);
   packet[4] = deviceId >> 8;
   packet[5] = deviceId;

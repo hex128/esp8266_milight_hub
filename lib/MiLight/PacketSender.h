@@ -13,14 +13,14 @@ public:
   PacketSender(
     RadioSwitchboard& radioSwitchboard,
     Settings& settings,
-    PacketSentHandler packetSentHandler
+    const PacketSentHandler &packetSentHandler
   );
 
-  void enqueue(uint8_t* packet, const MiLightRemoteConfig* remoteConfig, size_t repeatsOverride = 0);
+  void enqueue(const uint8_t* packet, const MiLightRemoteConfig* remoteConfig, size_t repeatsOverride = 0);
   void loop();
 
   // Return true if there are queued packets
-  bool isSending();
+  bool isSending() const;
 
   // Return the number of queued packets
   size_t queueLength() const;
@@ -47,9 +47,9 @@ private:
   void nextPacket();
 
   // Send repeats of the current packet N times
-  void sendRepeats(size_t num);
+  void sendRepeats(size_t num) const;
 
-  // Used to track auto repeat limiting
+  // Used to track auto-repeat limiting
   unsigned long lastSend;
   uint8_t currentResendCount;
 
@@ -66,7 +66,7 @@ private:
    *
    *    lastRepeatsValue + (millisSinceLastSend - THRESHOLD) * throttleMultiplier
    *
-   * When the last send was more recent than THRESHOLD, the number of repeats
+   * When the last sending was more recent than THRESHOLD, the number of repeats
    * will be decreased to a minimum of zero.  When less recent, it will be
    * increased up to a maximum of the default resend count.
    */

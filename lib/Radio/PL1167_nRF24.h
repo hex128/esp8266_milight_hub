@@ -16,7 +16,7 @@
 
 class PL1167_nRF24 {
   public:
-    PL1167_nRF24(RF24& radio);
+  explicit PL1167_nRF24(RF24& radio);
     int open();
 
     int setSyncword(const uint8_t syncword[], size_t syncwordLength);
@@ -47,5 +47,4 @@ class PL1167_nRF24 {
 
     int recalc_parameters();
     int internal_receive();
-
 };

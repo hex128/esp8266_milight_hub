@@ -4,10 +4,10 @@
 
 class GroupStatePersistence {
 public:
-  void get(const BulbId& id, GroupState& state);
-  void set(const BulbId& id, const GroupState& state);
+  static void get(const BulbId& id, GroupState& state);
+  static void set(const BulbId& id, const GroupState& state);
 
-  void clear(const BulbId& id);
+  static void clear(const BulbId& id);
 
 private:
 

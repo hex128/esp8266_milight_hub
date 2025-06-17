@@ -14,22 +14,22 @@ enum CctCommandIds {
   V2_CCT_OFF              = 0x08
 };
 
-class V6CctCommandHandler : public V6CommandHandler {
+class V6CctCommandHandler final : public V6CommandHandler {
 public:
   V6CctCommandHandler()
     : V6CommandHandler(0x0100, FUT007Config)
   { }
 
-  virtual bool handleCommand(
+  bool handleCommand(
     MiLightClient* client,
     uint32_t command,
     uint32_t commandArg
-  );
+  ) override;
 
-  virtual bool handlePreset(
+  bool handlePreset(
     MiLightClient* client,
     uint8_t commandLsb,
     uint32_t commandArg
-  );
+  ) override;
 
 };

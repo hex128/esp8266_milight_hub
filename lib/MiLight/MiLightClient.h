@@ -13,7 +13,7 @@
 #include <map>
 
 //#define DEBUG_PRINTF
-//#define DEBUG_CLIENT_COMMANDS // enable to show each individual change command (like hue, brightness, etc)
+//#define DEBUG_CLIENT_COMMANDS // enable to show each change command (like hue, brightness, etc.)
 
 namespace RequestKeys {
   static constexpr char TRANSITION[] = "transition";
@@ -27,12 +27,12 @@ namespace TransitionParams {
   static constexpr char PERIOD[] PROGMEM = "period";
 }
 
-// Used to determine RGB colros that are approximately white
+// Used to determine RGB colors that are approximately white
 #define RGB_WHITE_THRESHOLD 10
 
 class MiLightClient {
 public:
-  // Used to indicate that the start value for a transition should be fetched from current state
+  // Used to indicate that the start value for a transition should be fetched from the current state
   static constexpr int16_t FETCH_VALUE_FROM_STATE = -1;
 
   MiLightClient(
@@ -102,10 +102,10 @@ public:
   std::shared_ptr<MiLightRadio> switchRadio(const MiLightRemoteConfig* remoteConfig) const;
   // MiLightRemoteConfig& currentRemoteConfig() const;
 
-  // Call to override the number of packet repeats that are sent.  Clear with clearRepeatsOverride
+  // Call to override the number of packet repeats. Clear with clearRepeatsOverride
   void setRepeatsOverride(size_t repeatsOverride);
 
-  // Clear the repeats override so that the default is used
+  // Remove the repeat count override.
   void clearRepeatsOverride();
 
   static uint8_t parseStatus(JsonVariant object);

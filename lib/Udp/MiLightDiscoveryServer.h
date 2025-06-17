@@ -5,9 +5,9 @@
 
 class MiLightDiscoveryServer {
 public:
-  MiLightDiscoveryServer(Settings& settings);
-  MiLightDiscoveryServer(MiLightDiscoveryServer&);
-  MiLightDiscoveryServer& operator=(MiLightDiscoveryServer other);
+  explicit MiLightDiscoveryServer(Settings& settings);
+  MiLightDiscoveryServer(const MiLightDiscoveryServer&);
+  MiLightDiscoveryServer& operator=(const MiLightDiscoveryServer &other);
   ~MiLightDiscoveryServer();
 
   void begin();

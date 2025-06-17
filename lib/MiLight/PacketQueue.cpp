@@ -27,14 +27,13 @@ std::shared_ptr<QueuedPacket> PacketQueue::checkoutPacket() {
   if (queue.size() == MILIGHT_MAX_QUEUED_PACKETS) {
     ++droppedPackets;
     return queue.getLast();
-  } else {
-    std::shared_ptr<QueuedPacket> packet = std::make_shared<QueuedPacket>();
-    queue.add(packet);
-    return packet;
   }
+  auto packet = std::make_shared<QueuedPacket>();
+  queue.add(packet);
+  return packet;
 }
 
-void PacketQueue::checkinPacket(std::shared_ptr<QueuedPacket> packet) {
+void PacketQueue::checkinPacket([[maybe_unused]] std::shared_ptr<QueuedPacket> packet) {
 }
 
 size_t PacketQueue::size() const {

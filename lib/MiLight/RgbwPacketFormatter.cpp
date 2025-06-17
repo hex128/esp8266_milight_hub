@@ -19,7 +19,7 @@ void RgbwPacketFormatter::initializePacket(uint8_t* packet) {
   packet[packetPtr++] = 0;
   packet[packetPtr++] = (groupId & 0x07);
   packet[packetPtr++] = 0;
-  packet[packetPtr++] = sequenceNum++;
+  packet[packetPtr] = sequenceNum++;
 }
 
 void RgbwPacketFormatter::unpair() {
@@ -43,7 +43,7 @@ void RgbwPacketFormatter::previousMode() {
   updateMode((currentMode() + RGBW_NUM_MODES - 1) % RGBW_NUM_MODES);
 }
 
-uint8_t RgbwPacketFormatter::currentMode() {
+uint8_t RgbwPacketFormatter::currentMode() const {
   const GroupState* state = stateStore->get(deviceId, groupId, REMOTE_TYPE_RGBW);
   return state != nullptr ? state->getMode() : 0;
 }
@@ -99,13 +99,14 @@ void RgbwPacketFormatter::enableNightMode() {
 
   // Bulbs must be OFF for night mode to work in RGBW.
   // Turn it off if it isn't already off.
-  const GroupState* state = stateStore->get(deviceId, groupId, REMOTE_TYPE_RGBW);
-  if (state == nullptr || state->getState() == ON) {
+  if (
+    const GroupState* state = stateStore->get(deviceId, groupId, REMOTE_TYPE_RGBW); state == nullptr ||
+    state->getState() == ON
+  ) {
     command(button, 0);
   }
 
-  // Night mode command has 0x10 bit set, but is otherwise
-  // a repeat of the OFF command.
+  // Night mode command has 0x10 bit set but is otherwise a repeat of the OFF command.
   command(button | 0x10, 0);
 }
 

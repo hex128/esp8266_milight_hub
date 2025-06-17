@@ -9,9 +9,9 @@ public:
   GroupStateStore(size_t maxSize, size_t flushRate);
 
   /*
-   * Returns the state for the given BulbId.  If accessing state for a valid device
-   * (i.e., NOT group 0) and no state exists, its state will be initialized with a
-   * default.
+* Retrieves the state for a given BulbId. For valid devices (groups 1-4), creates and 
+* initializes state with defaults if none exists. Returns NULL for invalid devices 
+* (group 0).
    *
    * Otherwise, we return NULL.
    */

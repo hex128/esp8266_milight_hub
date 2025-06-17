@@ -1,25 +1,25 @@
 #include <PacketSender.h>
-#include <MiLightRadioConfig.h>
 
 PacketSender::PacketSender(
   RadioSwitchboard& radioSwitchboard,
   Settings& settings,
-  PacketSentHandler packetSentHandler
-) : radioSwitchboard(radioSwitchboard)
-  , settings(settings)
-  , currentPacket(nullptr)
-  , packetRepeatsRemaining(0)
-  , packetSentHandler(packetSentHandler)
-  , lastSend(0)
-  , currentResendCount(settings.packetRepeats)
-  , throttleMultiplier(
+  const PacketSentHandler &packetSentHandler
+) : radioSwitchboard(radioSwitchboard),
+    settings(settings),
+    stateStore(nullptr),
+    currentPacket(nullptr),
+    packetRepeatsRemaining(0),
+    packetSentHandler(packetSentHandler),
+    lastSend(0),
+    currentResendCount(settings.packetRepeats),
+    throttleMultiplier(
       std::ceil(
         (settings.packetRepeatThrottleSensitivity / 1000.0) * settings.packetRepeats
       )
     )
-{ }
+{}
 
-void PacketSender::enqueue(uint8_t* packet, const MiLightRemoteConfig* remoteConfig, const size_t repeatsOverride) {
+void PacketSender::enqueue(const uint8_t* packet, const MiLightRemoteConfig* remoteConfig, const size_t repeatsOverride) {
 #ifdef DEBUG_PRINTF
   Serial.println("Enqueuing packet");
 #endif
@@ -42,7 +42,7 @@ void PacketSender::loop() {
   }
 }
 
-bool PacketSender::isSending() {
+bool PacketSender::isSending() const {
   return packetRepeatsRemaining > 0 || !queue.isEmpty();
 }
 
@@ -63,14 +63,14 @@ void PacketSender::nextPacket() {
 }
 
 void PacketSender::handleCurrentPacket() {
-  // Always switch radio.  could've been listening in another context
+  // Always switch radio. Could've been listening in another context
   radioSwitchboard.switchRadio(currentPacket->remoteConfig);
 
   const size_t numToSend = std::min(packetRepeatsRemaining, settings.packetRepeatsPerLoop);
   sendRepeats(numToSend);
   packetRepeatsRemaining -= numToSend;
 
-  // If we're done sending this packet, fire the sent packet callback
+  // If we're done sending this packet, fire the transmitted packet callback
   if (packetRepeatsRemaining == 0 && packetSentHandler != nullptr) {
     packetSentHandler(currentPacket->packet, *currentPacket->remoteConfig);
   }
@@ -84,7 +84,7 @@ size_t PacketSender::droppedPackets() const {
   return queue.getDroppedPacketCount();
 }
 
-void PacketSender::sendRepeats(size_t num) {
+void PacketSender::sendRepeats(size_t num) const {
   size_t len = currentPacket->remoteConfig->packetFormatter->getPacketLength();
 
 #ifdef DEBUG_PRINTF

@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include <stddef.h>
+#include <cstddef>
 #include <MqttClient.h>
 #include <CircularBuffer.h>
 #include <Settings.h>
@@ -31,5 +31,5 @@ private:
   bool enabled;
 
   inline void flushGroup(const BulbId &bulbId, const GroupState& state);
-  inline bool canFlush() const;
+  [[nodiscard]] inline bool canFlush() const;
 };

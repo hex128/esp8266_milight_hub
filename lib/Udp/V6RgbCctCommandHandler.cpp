@@ -1,10 +1,10 @@
 #include <V6RgbCctCommandHandler.h>
 
 bool V6RgbCctCommandHandler::handlePreset(
-    MiLightClient* client,
-    uint8_t commandLsb,
-    uint32_t commandArg)
-{
+  MiLightClient *client,
+  const uint8_t commandLsb,
+  const uint32_t commandArg
+) {
   if (commandLsb == 0) {
     const uint8_t saturation = commandArg >> 24;
     const uint8_t color = (commandArg >> 16);
@@ -27,10 +27,10 @@ bool V6RgbCctCommandHandler::handlePreset(
 }
 
 bool V6RgbCctCommandHandler::handleCommand(
-    MiLightClient* client,
-    uint32_t command,
-    uint32_t commandArg)
-{
+  MiLightClient *client,
+  const uint32_t command,
+  const uint32_t commandArg
+) {
   const uint8_t cmd = command & 0x7F;
   const uint8_t arg = commandArg >> 24;
 
@@ -92,9 +92,9 @@ bool V6RgbCctCommandHandler::handleCommand(
 
 /*
  * Arguments are 32 bits. Most commands use the first byte, but color arguments
- * can use all four. Triggered in app when quickly transitioning through colors.
+ * can use all four. Triggered in the app when quickly transitioning through colors.
  */
-void V6RgbCctCommandHandler::handleUpdateColor(MiLightClient *client, uint32_t color) {
+void V6RgbCctCommandHandler::handleUpdateColor(const MiLightClient *client, const uint32_t color) {
   for (int i = 3; i >= 0; i--) {
     const uint8_t argValue = (color >> (i*8)) & 0xFF;
 

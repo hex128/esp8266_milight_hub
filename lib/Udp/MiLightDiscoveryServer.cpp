@@ -6,18 +6,18 @@
   #include <WiFi.h>
 #endif
 
-const char V3_SEARCH_STRING[] = "Link_Wi-Fi";
-const char V6_SEARCH_STRING[] = "HF-A11ASSISTHREAD";
+constexpr char V3_SEARCH_STRING[] = "Link_Wi-Fi";
+constexpr char V6_SEARCH_STRING[] = "HF-A11ASSISTHREAD";
 
 MiLightDiscoveryServer::MiLightDiscoveryServer(Settings& settings)
   : settings(settings)
 { }
 
-MiLightDiscoveryServer::MiLightDiscoveryServer(MiLightDiscoveryServer& other)
+MiLightDiscoveryServer::MiLightDiscoveryServer(const MiLightDiscoveryServer& other)
   : settings(other.settings)
 { }
 
-MiLightDiscoveryServer& MiLightDiscoveryServer::operator=(MiLightDiscoveryServer other) {
+MiLightDiscoveryServer& MiLightDiscoveryServer::operator=(const MiLightDiscoveryServer &other) {
   this->settings = other.settings;
   this->socket = other.socket;
   return *this;
@@ -32,9 +32,7 @@ void MiLightDiscoveryServer::begin() {
 }
 
 void MiLightDiscoveryServer::handleClient() {
-  size_t packetSize = socket.parsePacket();
-
-  if (packetSize) {
+  if (const size_t packetSize = socket.parsePacket()) {
     char buffer[size(V6_SEARCH_STRING) + 1];
     socket.read(buffer, packetSize);
     buffer[packetSize] = 0;
@@ -58,8 +56,8 @@ void MiLightDiscoveryServer::handleDiscovery(uint8_t version) {
 
   char buffer[40];
 
-  for (size_t i = 0; i < settings.gatewayConfigs.size(); i++) {
-    const GatewayConfig& config = *settings.gatewayConfigs[i];
+  for (auto & gatewayConfig : settings.gatewayConfigs) {
+    const GatewayConfig& config = *gatewayConfig;
 
     if (config.protocolVersion != version) {
       continue;

@@ -1,31 +1,17 @@
-from subprocess import check_output
-import sys
 import os
-import platform
+import sys
 import subprocess
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-os.chdir(dir_path)
-
-# http://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
-def is_tool(name):
-    cmd = "where" if platform.system() == "Windows" else "which"
+def get_git_version():
     try:
-        check_output([cmd, name])
-        return True
-    except:
-        return False
-
-version = "UNKNOWN".encode()
-
-if is_tool("git"):
-    try:
-        version = check_output(["git", "describe", "--always"]).rstrip()
-    except:
+        return subprocess.check_output(["git", "describe", "--always"]).decode().strip()
+    except Exception:
         try:
-            version = check_output(["git", "rev-parse", "--short", "HEAD"]).rstrip()
-        except:
-            pass
-        pass
+            return subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode().strip()
+        except Exception:
+            return "UNKNOWN"
 
-sys.stdout.write("-DMILIGHT_HUB_VERSION=%s %s" % (version.decode('utf-8'), ' '.join(sys.argv[1:])))
+if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    version = get_git_version()
+    print(f"-DMILIGHT_HUB_VERSION={version} {' '.join(sys.argv[1:])}")

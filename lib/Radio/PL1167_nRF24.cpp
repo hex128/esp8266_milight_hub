@@ -14,11 +14,11 @@
 #include <RadioUtils.h>
 #include <MiLightRadioConfig.h>
 
-static uint16_t calc_crc(uint8_t *data, size_t data_length);
+static uint16_t calc_crc(const uint8_t *data, size_t data_length);
 
 PL1167_nRF24::PL1167_nRF24(RF24 &radio)
-  : _radio(radio)
-{ }
+  : _radio(radio), _nrf_pipe{}, _nrf_pipe_length(0), _packet{} {
+}
 
 int PL1167_nRF24::open() {
   _radio.begin();
@@ -33,7 +33,7 @@ int PL1167_nRF24::open() {
 }
 
 int PL1167_nRF24::recalc_parameters() {
-  size_t nrf_address_length = _syncwordLength;
+  const size_t nrf_address_length = _syncwordLength;
 
   // +2 for CRC
   size_t packet_length = _maxPacketLength + 2;
@@ -60,22 +60,21 @@ int PL1167_nRF24::recalc_parameters() {
   return 0;
 }
 
-int PL1167_nRF24::setSyncword(const uint8_t syncword[], size_t syncwordLength) {
+int PL1167_nRF24::setSyncword(const uint8_t syncword[], const size_t syncwordLength) {
   _syncwordLength = syncwordLength;
   _syncwordBytes = syncword;
   return recalc_parameters();
 }
 
-int PL1167_nRF24::setMaxPacketLength(uint8_t maxPacketLength) {
+int PL1167_nRF24::setMaxPacketLength(const uint8_t maxPacketLength) {
   _maxPacketLength = maxPacketLength;
   return recalc_parameters();
 }
 
-int PL1167_nRF24::receive(uint8_t channel) {
+int PL1167_nRF24::receive(const uint8_t channel) {
   if (channel != _channel) {
     _channel = channel;
-    int retval = recalc_parameters();
-    if (retval < 0) {
+    if (const int retval = recalc_parameters(); retval < 0) {
       return retval;
     }
   }
@@ -125,11 +124,10 @@ int PL1167_nRF24::writeFIFO(const uint8_t data[], size_t data_length)
   return data_length;
 }
 
-int PL1167_nRF24::transmit(uint8_t channel) {
+int PL1167_nRF24::transmit(const uint8_t channel) {
   if (channel != _channel) {
     _channel = channel;
-    int retval = recalc_parameters();
-    if (retval < 0) {
+    if (const int retval = recalc_parameters(); retval < 0) {
       return retval;
     }
     yield();
@@ -139,7 +137,7 @@ int PL1167_nRF24::transmit(uint8_t channel) {
   uint8_t tmp[sizeof(_packet)];
   int outp=0;
 
-  uint16_t crc = calc_crc(_packet, _packet_length);
+  const uint16_t crc = calc_crc(_packet, _packet_length);
 
   // +1 for packet length
   // +2 for crc
@@ -162,7 +160,7 @@ int PL1167_nRF24::transmit(uint8_t channel) {
  * The over-the-air packet structure sent by the PL1167 is as follows (lengths
  * measured in bits)
  *
- * Preamble ( 8) | Syncword (32) | Trailer ( 4) | Packet Len ( 8) | Packet (...)
+ * Preamble (8) | Syncword (32) | Trailer (4) | Packet Len (8) | Packet (...)
  *
  * Note that because the Trailer is 4 bits, the remaining data is not byte-aligned.
  *
@@ -178,7 +176,7 @@ int PL1167_nRF24::internal_receive() {
   // HACK HACK HACK: Reset radio
   open();
 
-// Currently, the syncword width is set to 5 in order to include the
+// Currently, the syncword width is set to 5 to include the
 // PL1167 trailer.  The trailer is 4 bits, which pushes packet data
 // out of byte-alignment.
 //
@@ -244,7 +242,7 @@ int PL1167_nRF24::internal_receive() {
 
 #define CRC_POLY 0x8408
 
-static uint16_t calc_crc(uint8_t *data, size_t data_length) {
+static uint16_t calc_crc(const uint8_t *data, const size_t data_length) {
   uint16_t state = 0;
   for (size_t i = 0; i < data_length; i++) {
     uint8_t byte = data[i];

@@ -7,11 +7,11 @@ static constexpr uint8_t BRIGHTNESS_SCALE_MAX = 0x97;
 static constexpr uint8_t KELVIN_SCALE_MAX = 0xC5;
 
 void FUT091PacketFormatter::updateBrightness(const uint8_t value) {
-  command(static_cast<uint8_t>(FUT091Command::BRIGHTNESS), tov2scale(value, BRIGHTNESS_SCALE_MAX, 2));
+  command(static_cast<uint8_t>(FUT091Command::BRIGHTNESS), toV2Scale(value, BRIGHTNESS_SCALE_MAX, 2));
 }
 
 void FUT091PacketFormatter::updateTemperature(const uint8_t value) {
-  command(static_cast<uint8_t>(FUT091Command::KELVIN), tov2scale(value, KELVIN_SCALE_MAX, 2, false));
+  command(static_cast<uint8_t>(FUT091Command::KELVIN), toV2Scale(value, KELVIN_SCALE_MAX, 2, false));
 }
 
 void FUT091PacketFormatter::enableNightMode() {
@@ -44,10 +44,10 @@ BulbId FUT091PacketFormatter::parsePacket(const uint8_t *packet, const JsonObjec
       bulbId.groupId = arg-5;
     }
   } else if (command == static_cast<uint8_t>(FUT091Command::BRIGHTNESS)) {
-    const uint8_t level = fromv2scale(arg, BRIGHTNESS_SCALE_MAX, 2, true);
+    const uint8_t level = fromV2Scale(arg, BRIGHTNESS_SCALE_MAX, 2, true);
     result[GroupStateFieldNames::BRIGHTNESS] = Units::rescale<uint8_t, uint8_t>(level, 255, 100);
   } else if (command == static_cast<uint8_t>(FUT091Command::KELVIN)) {
-    const uint8_t kelvin = fromv2scale(arg, KELVIN_SCALE_MAX, 2, false);
+    const uint8_t kelvin = fromV2Scale(arg, KELVIN_SCALE_MAX, 2, false);
     result[GroupStateFieldNames::COLOR_TEMP] = Units::whiteValToMireds(kelvin, 100);
   } else {
     result["button_id"] = command;

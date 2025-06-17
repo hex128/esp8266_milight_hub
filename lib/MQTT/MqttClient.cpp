@@ -6,7 +6,6 @@
 #include <IntParsing.h>
 #include <ArduinoJson.h>
 #include <WiFiClient.h>
-#include <MiLightRadioConfig.h>
 #include <AboutHelper.h>
 
 static auto STATUS_CONNECTED = "connected";

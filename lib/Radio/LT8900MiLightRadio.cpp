@@ -15,7 +15,12 @@
 /**************************************************************************/
 // Constructor
 /**************************************************************************/
-LT8900MiLightRadio::LT8900MiLightRadio(byte byCSPin, byte byResetPin, byte byPktFlag, const MiLightRadioConfig& config)
+LT8900MiLightRadio::LT8900MiLightRadio(
+	const byte byCSPin,
+	const byte byResetPin,
+	const byte byPktFlag,
+	const MiLightRadioConfig& config
+)
   : _config(config),
     _channel(0),
     _currentPacketLen(0),
@@ -26,7 +31,7 @@ LT8900MiLightRadio::LT8900MiLightRadio(byte byCSPin, byte byResetPin, byte byPkt
 
   pinMode(_pin_pktflag, INPUT);
 
-	if (byResetPin > 0)					// If zero then bypass hardware reset
+	if (byResetPin > 0) // If zero, then bypass hardware reset
 	{
 		pinMode(byResetPin, OUTPUT);
 		digitalWrite(byResetPin, LOW);
@@ -41,7 +46,7 @@ LT8900MiLightRadio::LT8900MiLightRadio(byte byCSPin, byte byResetPin, byte byPkt
   SPI.begin();
 
   SPI.setDataMode(SPI_MODE1);
-  // The following speed settings depends upon the wiring and PCB
+  // The following speed settings depend upon the wiring and PCB
   //SPI.setFrequency(8000000);
   SPI.setFrequency(4000000);
   SPI.setBitOrder(MSBFIRST);
@@ -64,11 +69,10 @@ LT8900MiLightRadio::LT8900MiLightRadio(byte byCSPin, byte byResetPin, byte byPkt
 /**************************************************************************/
 // Checks the connection to the radio module by verifying a register setting
 /**************************************************************************/
-bool LT8900MiLightRadio::bCheckRadioConnection(void)
-{
+bool LT8900MiLightRadio::bCheckRadioConnection() const {
 	bool bRetValue = false;
-	uint16_t value_0 = uiReadRegister(0);
-	uint16_t value_1 = uiReadRegister(1);
+	const uint16_t value_0 = uiReadRegister(0);
+	const uint16_t value_1 = uiReadRegister(1);
 
 	if ((value_0 == 0x6fe0) && (value_1 == 0x5681))
 	{
@@ -90,9 +94,7 @@ bool LT8900MiLightRadio::bCheckRadioConnection(void)
 /**************************************************************************/
 // Initialize radio module
 /**************************************************************************/
-void LT8900MiLightRadio::vInitRadioModule() {
-	bool bWriteDefaultDefault = true;  // Is it okay to use the default power up values, without setting them
-
+void LT8900MiLightRadio::vInitRadioModule() const {
 	regWrite16(0x00, 0x6F, 0xE0, 7);  // Recommended value by PMmicro
 	regWrite16(0x02, 0x66, 0x17, 7);  // Recommended value by PMmicro
 	regWrite16(0x04, 0x9C, 0xC9, 7);  // Recommended value by PMmicro
@@ -121,7 +123,7 @@ void LT8900MiLightRadio::vInitRadioModule() {
 	regWrite16(0x29, 0xB0, 0x00, 7);  // Recommended value by PMmicro
 	regWrite16(0x2A, 0xFD, 0xB0, 7);  // Recommended value by PMmicro
 
-	if (bWriteDefaultDefault == true) {
+	if constexpr (constexpr bool bWriteDefaultDefault = true; bWriteDefaultDefault == true) {
 		regWrite16(0x01, 0x56, 0x81, 7);  // Recommended value by PMmicro
 		regWrite16(0x0A, 0x7F, 0xFD, 7);  // Recommended value by PMmicro
 		regWrite16(0x0C, 0x00, 0x00, 7);  // Recommended value by PMmicro
@@ -138,8 +140,12 @@ void LT8900MiLightRadio::vInitRadioModule() {
 /**************************************************************************/
 // Set sync word
 /**************************************************************************/
-void LT8900MiLightRadio::vSetSyncWord(uint16_t syncWord3, uint16_t syncWord2, uint16_t syncWord1, uint16_t syncWord0)
-{
+void LT8900MiLightRadio::vSetSyncWord(
+	const uint16_t syncWord3,
+	uint16_t syncWord2,
+	const uint16_t syncWord1,
+	const uint16_t syncWord0
+) const {
 	uiWriteRegister(R_SYNCWORD1, syncWord0);
 	uiWriteRegister(R_SYNCWORD2, syncWord1);
 	uiWriteRegister(R_SYNCWORD3, syncWord1);
@@ -147,10 +153,9 @@ void LT8900MiLightRadio::vSetSyncWord(uint16_t syncWord3, uint16_t syncWord2, ui
 }
 
 /**************************************************************************/
-// Low level register write with delay
+// Low-level register write with delay
 /**************************************************************************/
-void LT8900MiLightRadio::regWrite16(byte ADDR, byte V1, byte V2, byte WAIT)
-{
+void LT8900MiLightRadio::regWrite16(const byte ADDR, const byte V1, const byte V2, const byte WAIT) const {
 	digitalWrite(_csPin, LOW);
 	SPI.transfer(ADDR);
 	SPI.transfer(V1);
@@ -161,15 +166,14 @@ void LT8900MiLightRadio::regWrite16(byte ADDR, byte V1, byte V2, byte WAIT)
 
 
 /**************************************************************************/
-// Low level register read
+// Low-level register read
 /**************************************************************************/
-uint16_t LT8900MiLightRadio::uiReadRegister(uint8_t reg)
-{
+uint16_t LT8900MiLightRadio::uiReadRegister(const uint8_t reg) const {
 	SPI.setDataMode(SPI_MODE1);
 	digitalWrite(_csPin, LOW);
 	SPI.transfer(REGISTER_READ | (REGISTER_MASK & reg));
-	uint8_t high = SPI.transfer(0x00);
-	uint8_t low = SPI.transfer(0x00);
+	const uint8_t high = SPI.transfer(0x00);
+	const uint8_t low = SPI.transfer(0x00);
 
 	digitalWrite(_csPin, HIGH);
 
@@ -179,16 +183,15 @@ uint16_t LT8900MiLightRadio::uiReadRegister(uint8_t reg)
 
 
 /**************************************************************************/
-// Low level 16bit register write
+// Low-level 16bit register write
 /**************************************************************************/
-uint8_t LT8900MiLightRadio::uiWriteRegister(uint8_t reg, uint16_t data)
-{
-	uint8_t high = data >> 8;
-	uint8_t low = data & 0xFF;
+uint8_t LT8900MiLightRadio::uiWriteRegister(const uint8_t reg, const uint16_t data) const {
+	const uint8_t high = data >> 8;
+	const uint8_t low = data & 0xFF;
 
 	digitalWrite(_csPin, LOW);
 
-	uint8_t result = SPI.transfer(REGISTER_WRITE | (REGISTER_MASK & reg));
+	const uint8_t result = SPI.transfer(REGISTER_WRITE | (REGISTER_MASK & reg));
 	SPI.transfer(high);
 	SPI.transfer(low);
 
@@ -198,9 +201,9 @@ uint8_t LT8900MiLightRadio::uiWriteRegister(uint8_t reg, uint16_t data)
 }
 
 /**************************************************************************/
-// Start listening on specified channel and syncword
+// Start listening on a specified channel and syncword
 /**************************************************************************/
-void LT8900MiLightRadio::vStartListening(uint uiChannelToListenTo)
+void LT8900MiLightRadio::vStartListening(const uint uiChannelToListenTo)
 {
   _dupes_received = 0;
   vSetSyncWord(_config.syncword3, 0,0,_config.syncword0);
@@ -215,7 +218,7 @@ void LT8900MiLightRadio::vStartListening(uint uiChannelToListenTo)
 /**************************************************************************/
 // Resume listening - without changing the channel and syncword
 /**************************************************************************/
-void LT8900MiLightRadio::vResumeRX(void)
+void LT8900MiLightRadio::vResumeRX()
 {
   _dupes_received = 0;
 	uiWriteRegister(R_CHANNEL, _channel & CHANNEL_MASK);   //turn off rx/tx
@@ -227,7 +230,7 @@ void LT8900MiLightRadio::vResumeRX(void)
 /**************************************************************************/
 // Check if data is available using the hardware pin PKT_FLAG
 /**************************************************************************/
-bool LT8900MiLightRadio::bAvailablePin() {
+bool LT8900MiLightRadio::bAvailablePin() const {
   return digitalRead(_pin_pktflag) > 0;
 }
 
@@ -235,8 +238,8 @@ bool LT8900MiLightRadio::bAvailablePin() {
 // Check if data is available using the PKT_FLAG state in the status register
 /**************************************************************************/
 bool LT8900MiLightRadio::bAvailableRegister() {
-	//read the PKT_FLAG state; this can also be done with a hard wire.
-	uint16_t value = uiReadRegister(R_STATUS);
+	//read the PKT_FLAG state; this can also be done with a hard-wire.
+	const uint16_t value = uiReadRegister(R_STATUS);
 
   if (bitRead(value, STATUS_CRC_BIT) != 0) {
 #ifdef DEBUG_PRINTF
@@ -252,7 +255,7 @@ bool LT8900MiLightRadio::bAvailableRegister() {
 /**************************************************************************/
 // Read the RX buffer
 /**************************************************************************/
-int LT8900MiLightRadio::iReadRXBuffer(uint8_t *buffer, size_t maxBuffer) {
+int LT8900MiLightRadio::iReadRXBuffer(uint8_t *buffer, const size_t maxBuffer) {
   size_t bufferIx = 0;
   uint16_t data;
 
@@ -298,7 +301,7 @@ int LT8900MiLightRadio::iReadRXBuffer(uint8_t *buffer, size_t maxBuffer) {
 /**************************************************************************/
 // Set the active channel for the radio module
 /**************************************************************************/
-void LT8900MiLightRadio::vSetChannel(uint8_t channel)
+void LT8900MiLightRadio::vSetChannel(const uint8_t channel)
 {
 	_channel = channel;
 	uiWriteRegister(R_CHANNEL, (_channel & CHANNEL_MASK));
@@ -316,7 +319,7 @@ int LT8900MiLightRadio::begin()
 }
 
 /**************************************************************************/
-// Configure the module according to type, and start listening
+// Configure the module according to type and start listening
 /**************************************************************************/
 int LT8900MiLightRadio::configure()
 {
@@ -339,7 +342,7 @@ bool LT8900MiLightRadio::available()
 }
 
 /**************************************************************************/
-// Read received data from buffer to upper layer
+// Read received data from buffer to the upper layer
 /**************************************************************************/
 int LT8900MiLightRadio::read(uint8_t frame[], size_t &frame_length)
 {
@@ -353,7 +356,7 @@ int LT8900MiLightRadio::read(uint8_t frame[], size_t &frame_length)
   #endif
 
   uint8_t buf[MILIGHT_MAX_PACKET_LENGTH];
-  int packetSize = iReadRXBuffer(buf, MILIGHT_MAX_PACKET_LENGTH);
+  const int packetSize = iReadRXBuffer(buf, MILIGHT_MAX_PACKET_LENGTH);
 
   if (packetSize > 0) {
     frame_length = packetSize;
@@ -368,7 +371,7 @@ int LT8900MiLightRadio::read(uint8_t frame[], size_t &frame_length)
 /**************************************************************************/
 // Write data
 /**************************************************************************/
-int LT8900MiLightRadio::write(uint8_t frame[], size_t frame_length)
+size_t LT8900MiLightRadio::write(uint8_t frame[], const size_t frame_length)
 {
   if (frame_length > sizeof(_out_packet) - 1) {
     return -1;
@@ -379,7 +382,7 @@ int LT8900MiLightRadio::write(uint8_t frame[], size_t frame_length)
 
   SPI.setDataMode(SPI_MODE1);
 
-  int retval = resend();
+  const int retval = resend();
   yield();
 
   SPI.setDataMode(SPI_MODE0);
@@ -391,15 +394,15 @@ int LT8900MiLightRadio::write(uint8_t frame[], size_t frame_length)
 }
 
 /**************************************************************************/
-// Handle the transmission to regarding to freq diversity and repeats
+// Handle the transmission to regarding freq diversity and repeats
 /**************************************************************************/
 int LT8900MiLightRadio::resend()
 {
-  byte Length =  _out_packet[0];
+  const byte Length =  _out_packet[0];
 
-  for (size_t i = 0; i < MiLightRadioConfig::NUM_CHANNELS; i++)
+  for (const unsigned char channel : _config.channels)
   {
-    sendPacket(_out_packet, Length, _config.channels[i]);
+    sendPacket(_out_packet, Length, channel);
     delayMicroseconds(DEFAULT_TIME_BETWEEN_RETRANSMISSIONS_uS);
   }
 
@@ -407,11 +410,10 @@ int LT8900MiLightRadio::resend()
 }
 
 /**************************************************************************/
-// The actual transmit happens here
+// The actual transmission happens here
 /**************************************************************************/
-bool LT8900MiLightRadio::sendPacket(uint8_t *data, size_t packetSize, byte byChannel)
-{
-  if(_bConnected) // Must be connected to module otherwise it might lookup waiting for _pin_pktflag
+bool LT8900MiLightRadio::sendPacket(const uint8_t *data, const size_t packetSize, const byte byChannel) const {
+  if(_bConnected) // Must be connected to the module otherwise it might look up waiting for _pin_pktflag
   {
     if (packetSize < 1 || packetSize > 255)
     {
@@ -425,9 +427,9 @@ bool LT8900MiLightRadio::sendPacket(uint8_t *data, size_t packetSize, byte byCha
     SPI.transfer(R_FIFO);             // Start writing PL1167's FIFO Data register
     SPI.transfer(packetSize);         // Length of data buffer: x bytes
 
-    for (byte iCounter = 0; iCounter < packetSize; iCounter++)
+    for (size_t iCounter = 0; iCounter < packetSize; iCounter++)
     {
-      SPI.transfer((data[1+iCounter]));
+      SPI.transfer(data[1+iCounter]);
     }
     digitalWrite(_csPin, HIGH);  // Disable PL1167 SPI transmission
     delayMicroseconds(10);

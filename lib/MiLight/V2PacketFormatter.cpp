@@ -34,7 +34,7 @@ void V2PacketFormatter::initializePacket(uint8_t* packet) {
   packet[packetPtr++] = 0;
   packet[packetPtr++] = sequenceNum++;
   packet[packetPtr++] = groupId;
-  packet[packetPtr++] = 0;
+  packet[packetPtr] = 0;
 }
 
 void V2PacketFormatter::command(uint8_t command, const uint8_t arg) {
@@ -82,7 +82,7 @@ void V2PacketFormatter::format(uint8_t const* packet, char* buffer) {
   buffer += sprintf_P(buffer, PSTR("Checksum : %02X"), decodedPacket[8]);
 }
 
-uint8_t V2PacketFormatter::groupCommandArg(const MiLightStatus status, const uint8_t groupId) {
+uint8_t V2PacketFormatter::groupCommandArg(const MiLightStatus status, const uint8_t groupId) const {
   return GROUP_COMMAND_ARG(status, groupId, numGroups);
 }
 
@@ -109,7 +109,7 @@ void V2PacketFormatter::switchMode(const GroupState& currentState, const BulbMod
 
 }
 
-uint8_t V2PacketFormatter::tov2scale(uint8_t value, const uint8_t endValue, const uint8_t interval, const bool reverse) {
+uint8_t V2PacketFormatter::toV2Scale(uint8_t value, const uint8_t endValue, const uint8_t interval, const bool reverse) {
   if (reverse) {
     value = 100 - value;
   }
@@ -117,7 +117,7 @@ uint8_t V2PacketFormatter::tov2scale(uint8_t value, const uint8_t endValue, cons
   return (value * interval) + endValue;
 }
 
-uint8_t V2PacketFormatter::fromv2scale(uint8_t value, const uint8_t endValue, const uint8_t interval, const bool reverse, const uint8_t buffer) {
+uint8_t V2PacketFormatter::fromV2Scale(uint8_t value, const uint8_t endValue, const uint8_t interval, const bool reverse, const uint8_t buffer) {
   value -= endValue;
 
   // Deal with underflow

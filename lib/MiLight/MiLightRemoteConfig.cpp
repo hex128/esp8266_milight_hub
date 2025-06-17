@@ -1,6 +1,14 @@
 #include <MiLightRemoteConfig.h>
 #include <MiLightRemoteType.h>
 
+#include <CctPacketFormatter.h>
+#include<FUT020PacketFormatter.h>
+#include<FUT089PacketFormatter.h>
+#include<FUT091PacketFormatter.h>
+#include<RgbCctPacketFormatter.h>
+#include<RgbPacketFormatter.h>
+#include<RgbwPacketFormatter.h>
+
 /**
  * IMPORTANT NOTE: These should be in the same order as MiLightRemoteType.
  */
@@ -14,14 +22,14 @@ const MiLightRemoteConfig* MiLightRemoteConfig::ALL_REMOTES[] = {
   &FUT020Config
 };
 
-const size_t MiLightRemoteConfig::NUM_REMOTES = size(ALL_REMOTES);
+const size_t MiLightRemoteConfig::NUM_REMOTES = std::size(ALL_REMOTES);
 
 const MiLightRemoteConfig* MiLightRemoteConfig::fromType(const String& type) {
   return fromType(MiLightRemoteTypeHelpers::remoteTypeFromString(type));
 }
 
 const MiLightRemoteConfig* MiLightRemoteConfig::fromType(const MiLightRemoteType type) {
-  if (type == REMOTE_TYPE_UNKNOWN || type >= size(ALL_REMOTES)) {
+  if (type == REMOTE_TYPE_UNKNOWN || type >= std::size(ALL_REMOTES)) {
     Serial.print(F("MiLightRemoteConfig::fromType: ERROR - tried to fetch remote config for unknown type: "));
     Serial.println(type);
     return nullptr;

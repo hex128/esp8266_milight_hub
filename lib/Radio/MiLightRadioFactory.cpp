@@ -4,8 +4,8 @@ std::shared_ptr<MiLightRadioFactory> MiLightRadioFactory::fromSettings(const Set
   switch (settings.radioInterfaceType) {
     case nRF24:
       return std::make_shared<NRF24Factory>(
-        settings.csnPin,
         settings.cePin,
+        settings.csnPin,
         settings.rf24PowerLevel,
         settings.rf24Channels,
         settings.rf24ListenChannel
@@ -15,16 +15,16 @@ std::shared_ptr<MiLightRadioFactory> MiLightRadioFactory::fromSettings(const Set
       return std::make_shared<LT8900Factory>(settings.csnPin, settings.resetPin, settings.cePin);
 
     default:
-      return NULL;
+      return nullptr;
   }
 }
 
 NRF24Factory::NRF24Factory(
-  uint8_t csnPin,
-  uint8_t cePin,
-  RF24PowerLevel rF24PowerLevel,
+  const uint8_t cePin,
+  const uint8_t csnPin,
+  const RF24PowerLevel rF24PowerLevel,
   const std::vector<RF24Channel>& channels,
-  RF24Channel listenChannel
+  const RF24Channel listenChannel
 )
 : rf24(RF24(cePin, csnPin)),
   channels(channels),
@@ -37,7 +37,7 @@ std::shared_ptr<MiLightRadio> NRF24Factory::create(const MiLightRadioConfig &con
   return std::make_shared<NRF24MiLightRadio>(rf24, config, channels, listenChannel);
 }
 
-LT8900Factory::LT8900Factory(uint8_t csPin, uint8_t resetPin, uint8_t pktFlag)
+LT8900Factory::LT8900Factory(const uint8_t csPin, const uint8_t resetPin, const uint8_t pktFlag)
   : _csPin(csPin),
     _resetPin(resetPin),
     _pktFlag(pktFlag)

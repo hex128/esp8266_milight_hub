@@ -1,9 +1,9 @@
 #include <RadioSwitchboard.h>
 
 RadioSwitchboard::RadioSwitchboard(
-  std::shared_ptr<MiLightRadioFactory> radioFactory,
+  const std::shared_ptr<MiLightRadioFactory> &radioFactory,
   GroupStateStore* stateStore,
-  Settings& settings
+  const Settings& settings
 ) {
   for (size_t i = 0; i < MiLightRadioConfig::NUM_CONFIGS; i++) {
     std::shared_ptr<MiLightRadio> radio = radioFactory->create(MiLightRadioConfig::ALL_CONFIGS[i]);
@@ -46,7 +46,7 @@ std::shared_ptr<MiLightRadio> RadioSwitchboard::switchRadio(const MiLightRemoteC
   return radio;
 }
 
-void RadioSwitchboard::write(uint8_t* packet, const size_t len) {
+void RadioSwitchboard::write(uint8_t* packet, const size_t len) const {
   if (this->currentRadio == nullptr) {
     return;
   }
@@ -54,7 +54,7 @@ void RadioSwitchboard::write(uint8_t* packet, const size_t len) {
   this->currentRadio->write(packet, len);
 }
 
-size_t RadioSwitchboard::read(uint8_t* packet) {
+size_t RadioSwitchboard::read(uint8_t* packet) const {
   if (currentRadio == nullptr) {
     return 0;
   }
@@ -65,7 +65,7 @@ size_t RadioSwitchboard::read(uint8_t* packet) {
   return length;
 }
 
-bool RadioSwitchboard::available() {
+bool RadioSwitchboard::available() const {
   if (currentRadio == nullptr) {
     return false;
   }

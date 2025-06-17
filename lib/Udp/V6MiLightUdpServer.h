@@ -3,18 +3,19 @@
 // This protocol is documented here:
 // http://www.limitlessled.com/dev/
 
-#include <Arduino.h>
 #include <MiLightClient.h>
 #include <WiFiUdp.h>
 #include <MiLightUdpServer.h>
 #include <V6CommandHandler.h>
 
+#include <utility>
+
 #define V6_COMMAND_LEN 8
 #define V6_MAX_SESSIONS 10
 
 struct V6Session {
-  V6Session(const IPAddress &ipAddr, const uint16_t port, const uint16_t sessionId)
-    : ipAddr(ipAddr),
+  V6Session(IPAddress ipAddr, const uint16_t port, const uint16_t sessionId)
+    : ipAddr(std::move(ipAddr)),
       port(port),
       sessionId(sessionId),
       next(nullptr)
@@ -38,10 +39,10 @@ public:
   ~V6MiLightUdpServer() override;
 
   // Should return size of the response packet
-  virtual void handlePacket(uint8_t* packet, size_t packetSize);
+  void handlePacket(uint8_t* packet, size_t packetSize) override;
 
   template <typename T>
-  static T readInt(uint8_t* packet);
+  static T readInt(const uint8_t* packet);
 
   template <typename T>
   static uint8_t* writeInt(const T& value, uint8_t* packet);
@@ -67,9 +68,9 @@ protected:
   V6Session* firstSession;
 
   uint16_t beginSession();
-  bool sendResponse(uint16_t sessionId, uint8_t* responseBuffer, size_t responseSize);
-  bool matchesPacket(uint8_t* packet1, size_t packet1Len, uint8_t* packet2, size_t packet2Len);
-  void writeMacAddr(uint8_t* packet);
+  bool sendResponse(uint16_t sessionId, const uint8_t* responseBuffer, size_t responseSize);
+  static bool matchesPacket(const uint8_t* packet1, size_t packet1Len, const uint8_t* packet2, size_t packet2Len);
+  void writeMacAddr(uint8_t* packet) const;
 
   void handleSearch();
   void handleStartSession();

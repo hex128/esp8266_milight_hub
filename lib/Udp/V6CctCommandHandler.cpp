@@ -10,8 +10,8 @@ bool V6CctCommandHandler::handlePreset(
 
 bool V6CctCommandHandler::handleCommand(
     MiLightClient* client,
-    uint32_t command,
-    uint32_t commandArg)
+    const uint32_t command,
+    const uint32_t commandArg)
 {
   const uint8_t cmd = command & 0x7F;
   const uint8_t arg = commandArg >> 24;

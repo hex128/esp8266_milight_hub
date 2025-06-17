@@ -38,7 +38,7 @@ void CctPacketFormatter::initializePacket(uint8_t* packet) {
 
 void CctPacketFormatter::finalizePacket(uint8_t* packet) {
   // Calculate checksum over packet length .. sequenceNum
-  uint8_t checksum = 7; // Packet length is not part of packet
+  uint8_t checksum = 7; // Packet length is not part of a packet
   for (uint8_t i = 0; i < 6; i++) {
     checksum += currentPacket[i];
   }

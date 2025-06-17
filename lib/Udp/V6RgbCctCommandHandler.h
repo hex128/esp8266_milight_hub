@@ -19,24 +19,24 @@ enum V2CommandArgIds {
   V2_RGB_NIGHT_MODE = 0x05
 };
 
-class V6RgbCctCommandHandler : public V6CommandHandler {
+class V6RgbCctCommandHandler final : public V6CommandHandler {
 public:
   V6RgbCctCommandHandler()
     : V6CommandHandler(0x0800, FUT092Config)
   { }
 
-  virtual bool handleCommand(
+  bool handleCommand(
     MiLightClient* client,
     uint32_t command,
     uint32_t commandArg
-  );
+  ) override;
 
-  virtual bool handlePreset(
+  bool handlePreset(
     MiLightClient* client,
     uint8_t commandLsb,
     uint32_t commandArg
-  );
+  ) override;
 
-  void handleUpdateColor(MiLightClient* client, uint32_t color);
+  static void handleUpdateColor(const MiLightClient* client, uint32_t color);
 
 };

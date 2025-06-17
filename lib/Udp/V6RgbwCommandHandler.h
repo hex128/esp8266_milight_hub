@@ -16,22 +16,22 @@ enum RgbwCommandIds {
   V2_RGBW_NIGHT_LIGHT       = 0x06
 };
 
-class V6RgbwCommandHandler : public V6CommandHandler {
+class V6RgbwCommandHandler final : public V6CommandHandler {
 public:
   V6RgbwCommandHandler()
     : V6CommandHandler(0x0700, FUT096Config)
   { }
 
-  virtual bool handleCommand(
+  bool handleCommand(
     MiLightClient* client,
     uint32_t command,
     uint32_t commandArg
-  );
+  ) override;
 
-  virtual bool handlePreset(
+  bool handlePreset(
     MiLightClient* client,
     uint8_t commandLsb,
     uint32_t commandArg
-  );
+  ) override;
 
 };

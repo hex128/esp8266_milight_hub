@@ -3,10 +3,11 @@
 // This protocol is documented here:
 // http://www.limitlessled.com/dev/
 
-#include <Arduino.h>
 #include <MiLightClient.h>
 #include <WiFiUdp.h>
 #include <MiLightUdpServer.h>
+#include <RgbwPacketFormatter.h>
+#include <CctPacketFormatter.h>
 
 enum MiLightUdpCommands {
   UDP_CCT_ALL_ON             = 0x35,
@@ -52,16 +53,16 @@ enum MiLightUdpCommands {
   UDP_RGBW_COLOR             = 0x40
 };
 
-class V5MiLightUdpServer : public MiLightUdpServer {
+class V5MiLightUdpServer final : public MiLightUdpServer {
 public:
-  V5MiLightUdpServer(MiLightClient*& client, uint16_t port, uint16_t deviceId)
+  V5MiLightUdpServer(MiLightClient*& client, const uint16_t port, const uint16_t deviceId)
     : MiLightUdpServer(client, port, deviceId)
   { }
 
   // Should return size of the response packet
-  virtual void handlePacket(uint8_t* packet, size_t packetSize);
+  void handlePacket(uint8_t* packet, size_t packetSize) override;
 
 protected:
   void handleCommand(uint8_t command, uint8_t commandArg);
-  void pressButton(uint8_t button);
+  void pressButton(uint8_t button) const;
 };
