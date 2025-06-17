@@ -109,7 +109,7 @@ void MiLightHttpServer::begin() {
 
   server
     .buildHandler("/aliases")
-    .on(HTTP_GET, std::bind(&MiLightHttpServer::handleListAliases, this, _1))
+    .on(HTTP_GET, [this](auto && PH1) { handleListAliases(std::forward<decltype(PH1)>(PH1)); })
     .on(HTTP_POST, [this](auto && PH1) { handleCreateAlias(std::forward<decltype(PH1)>(PH1)); });
 
   server
