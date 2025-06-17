@@ -1,11 +1,14 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
-const PORT = 3000; // You can change this to any port you prefer
+const wsApp = express();
+const PORT = 8080; // You can change this to any port you prefer
+const WS_PORT = 8000; // You can change this to any port you prefer
 const PROXY_URL = process.env.PROXY_URL || 'http://milight-hub.local';
-const WS_PROXY_URL = process.env.WS_PROXY_URL || `ws://milight-hub.local:8000`;
+const WS_PROXY_URL = process.env.WS_PROXY_URL || `http://milight-hub.local:8000`;
 
 // HTTP proxy middleware
 const httpProxyMiddleware = createProxyMiddleware({
@@ -20,19 +23,28 @@ const wsProxyMiddleware = createProxyMiddleware({
   ws: true, // Enable WebSocket proxying
 });
 
+app.use((req, res, next) => {
+  if (req.path === '/' || fs.existsSync(path.join(__dirname, 'dist', 'build', req.path))) {
+    console.log(`Serving ${req.path} from build folder`);
+    return express.static(path.join(__dirname, 'dist', 'build'))(req, res, next);
+  } else if (fs.existsSync(path.join(__dirname, 'dist', 'compiled', req.path))) {
+    console.log(`Serving ${req.path} from compiled folder`);
+    return express.static(path.join(__dirname, 'dist', 'compiled'))(req, res, next);
+  } else {
+    console.log(`Serving ${req.path} from proxy target`);
+    return httpProxyMiddleware(req, res, next);
+  }
+});
 
-// Serve static files from the 'dist' directory
-app.use('/dist', express.static(path.join(__dirname, 'dist/compiled')));
-app.use('/index.html', express.static(path.join(__dirname, 'dist/build/index.html')));
+wsApp.use(wsProxyMiddleware);
 
-// Proxy HTTP requests that aren't files
-app.use('/', httpProxyMiddleware);
-
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   console.log(`HTTP requests proxied to: ${PROXY_URL}`);
   console.log(`WebSocket connections proxied to: ${WS_PROXY_URL}`);
 });
 
-// Upgrade HTTP server to also handle WebSocket connections
-server.on('upgrade', wsProxyMiddleware.upgrade);
+wsApp.listen(WS_PORT, () => {
+  console.log(`WebSocket server is running on ws://localhost:${WS_PORT}`);
+  console.log(`WebSocket requests proxied to: ${WS_PROXY_URL}`);
+});

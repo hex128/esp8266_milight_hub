@@ -46,7 +46,7 @@ function generateGzippedHeader(inputFile, variableName) {
   // Append hash to the output filename
   const outputFile = `dist/compiled/${path.basename(inputFile)}.gz`;
   const [baseName, extension] = path.basename(inputFile).split(".");
-  const serverFilename = `dist/${baseName}.${hash}.${extension}`;
+  const serverFilename = `${baseName}.${hash}.${extension}`;
 
   fs.writeFileSync(outputFile, gzipped);
   fs.writeFileSync(
